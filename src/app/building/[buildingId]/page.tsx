@@ -1,0 +1,20 @@
+import { getBuildingById, getAvailableFloors, getFloorplan } from '@/lib/data';
+import BuildingClient from '@/components/BuildingClient';
+import { notFound } from 'next/navigation';
+
+export default async function Page({ params }: { params: Promise<{ buildingId: string }> }) {
+    const { buildingId } = await params;
+    const building = getBuildingById(buildingId);
+
+    if (!building) {
+        notFound();
+    }
+
+    const availableFloors = getAvailableFloors(buildingId);
+    const floors = availableFloors.map(f => ({
+        floor: f,
+        data: getFloorplan(buildingId, f)
+    }));
+
+    return <BuildingClient building={building} floors={floors} />;
+}

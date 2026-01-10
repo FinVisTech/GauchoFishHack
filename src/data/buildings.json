@@ -1,0 +1,67 @@
+[
+    {
+        "id": "ucsb-library",
+        "name": "UCSB Library",
+        "abbr": [
+            "LIB",
+            "LIBR"
+        ],
+        "location": {
+            "lat": 34.4135,
+            "lng": -119.8465
+        },
+        "color": "#3b82f6"
+    },
+    {
+        "id": "ilp",
+        "name": "Interactive Learning Pavilion",
+        "abbr": [
+            "ILP"
+        ],
+        "location": {
+            "lat": 34.4121,
+            "lng": -119.8453
+        },
+        "color": "#f97316"
+    },
+    {
+        "id": "north-hall",
+        "name": "North Hall",
+        "abbr": [
+            "NH",
+            "N H",
+            "NORTHHALL"
+        ],
+        "location": {
+            "lat": 34.4168,
+            "lng": -119.8454
+        },
+        "color": "#10b981"
+    },
+    {
+        "id": "phelps-hall",
+        "name": "Phelps Hall",
+        "abbr": [
+            "PHELP",
+            "PHELPS"
+        ],
+        "location": {
+            "lat": 34.4162,
+            "lng": -119.8442
+        },
+        "color": "#8b5cf6"
+    },
+    {
+        "id": "harold-frank-hall",
+        "name": "Harold Frank Hall",
+        "abbr": [
+            "HFH",
+            "HAROLDFRANK"
+        ],
+        "location": {
+            "lat": 34.4139,
+            "lng": -119.8422
+        },
+        "color": "#ef4444"
+    }
+]

@@ -1,0 +1,137 @@
+{
+  "ucsb-library": {
+    "sourceZip": "Library.zip",
+    "floors": {
+      "1": {
+        "path": "/floorplans/ucsb-library/1.png",
+        "w": 1369,
+        "h": 1560
+      },
+      "2": {
+        "path": "/floorplans/ucsb-library/2.png",
+        "w": 1369,
+        "h": 1560
+      },
+      "3": {
+        "path": "/floorplans/ucsb-library/3.png",
+        "w": 2738,
+        "h": 1560
+      },
+      "4": {
+        "path": "/floorplans/ucsb-library/4.png",
+        "w": 1369,
+        "h": 1560
+      },
+      "5": {
+        "path": "/floorplans/ucsb-library/5.png",
+        "w": 1369,
+        "h": 1560
+      },
+      "6": {
+        "path": "/floorplans/ucsb-library/6.png",
+        "w": 1369,
+        "h": 1560
+      },
+      "7": {
+        "path": "/floorplans/ucsb-library/7.png",
+        "w": 1369,
+        "h": 1560
+      },
+      "8": {
+        "path": "/floorplans/ucsb-library/8.png",
+        "w": 1369,
+        "h": 1560
+      }
+    },
+    "skipped": []
+  },
+  "ilp": {
+    "sourceZip": "ILP.zip",
+    "floors": {
+      "1": {
+        "path": "/floorplans/ilp/1.png",
+        "w": 1644,
+        "h": 1644
+      },
+      "2": {
+        "path": "/floorplans/ilp/2.png",
+        "w": 1644,
+        "h": 1644
+      },
+      "3": {
+        "path": "/floorplans/ilp/3.png",
+        "w": 1644,
+        "h": 1644
+      },
+      "4": {
+        "path": "/floorplans/ilp/4.png",
+        "w": 1644,
+        "h": 1644
+      }
+    },
+    "skipped": []
+  },
+  "north-hall": {
+    "sourceZip": "NorthHall.zip",
+    "floors": {
+      "1": {
+        "path": "/floorplans/north-hall/1.png",
+        "w": 1374,
+        "h": 1374
+      },
+      "2": {
+        "path": "/floorplans/north-hall/2.png",
+        "w": 1382,
+        "h": 1382
+      }
+    },
+    "skipped": []
+  },
+  "phelps-hall": {
+    "sourceZip": "PhelpsHall.zip",
+    "floors": {
+      "1": {
+        "path": "/floorplans/phelps-hall/1.png",
+        "w": 1436,
+        "h": 1468
+      },
+      "2": {
+        "path": "/floorplans/phelps-hall/2.png",
+        "w": 1548,
+        "h": 1401
+      },
+      "3": {
+        "path": "/floorplans/phelps-hall/3.png",
+        "w": 1557,
+        "h": 1385
+      },
+      "4": {
+        "path": "/floorplans/phelps-hall/4.png",
+        "w": 1334,
+        "h": 1334
+      },
+      "5": {
+        "path": "/floorplans/phelps-hall/5.png",
+        "w": 1099,
+        "h": 1099
+      },
+      "6": {
+        "path": "/floorplans/phelps-hall/6.png",
+        "w": 1023,
+        "h": 1023
+      }
+    },
+    "skipped": []
+  },
+  "harold-frank-hall": {
+    "sourceZip": "HaroldFrankHall.zip",
+    "floors": {
+      "1": {
+        "path": "/floorplans/harold-frank-hall/1.png",
+        "w": 1262,
+        "h": 1262
+      }
+    },
+    "skipped": []
+  }
+}
