@@ -17,11 +17,10 @@ export async function POST(req: Request) {
 
         if (!process.env.OPENAI_API_KEY) {
             // Mock response if no key is present (common during dev)
-            return new Promise(resolve => setTimeout(() => {
-                resolve(NextResponse.json({
-                    result: `[MOCK RESPONSE - NO API KEY FOUND]\n\nBased on your schedule and the selection of "${action}", here is your supercharged plan:\n\n1. **Morning Focus**: You have a gap on Tuesday mornings. Use this for deep work.\n2. **Location Optimization**: Your walk from Girvetz to Phelps is efficient. Grab coffee at the Arbor.\n3. **Strategy**: Since you chose "${action}", prioritize reviewing lecture notes immediately after class on Wednesdays.`
-                }));
-            }, 2000));
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            return NextResponse.json({
+                result: `[MOCK RESPONSE - NO API KEY FOUND]\n\nBased on your schedule and the selection of "${action}", here is your supercharged plan:\n\n1. **Morning Focus**: You have a gap on Tuesday mornings. Use this for deep work.\n2. **Location Optimization**: Your walk from Girvetz to Phelps is efficient. Grab coffee at the Arbor.\n3. **Strategy**: Since you chose "${action}", prioritize reviewing lecture notes immediately after class on Wednesdays.`
+            });
         }
 
         const systemPrompt = `You are a High-Reasoning Academic Optimization AI (Model 5.2). 
