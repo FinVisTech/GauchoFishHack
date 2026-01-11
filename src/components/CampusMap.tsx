@@ -322,7 +322,7 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
             </div>
 
             {/* Top Search Bar - Adjusted margins for new buttons */}
-            <div className="absolute top-4 left-4 right-4 sm:left-32 sm:right-20 md:left-1/2 md:-translate-x-1/2 md:w-96 z-10 mt-16 sm:mt-0">
+            <div className="absolute top-4 left-4 right-4 sm:left-32 sm:right-20 md:left-1/2 md:-translate-x-1/2 md:w-96 z-10 mt-32 sm:mt-0">
                 <form onSubmit={handleSearchSubmit} className="relative shadow-lg rounded-xl">
                     <input
                         className="w-full h-12 pl-12 pr-4 rounded-xl border-none outline-none bg-white/90 backdrop-blur-sm text-slate-800 focus:ring-2 focus:ring-blue-500"
