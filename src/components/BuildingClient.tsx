@@ -18,7 +18,7 @@ interface BuildingClientProps {
 }
 
 export default function BuildingClient({ building, floors, targetRoom }: BuildingClientProps) {
-    const [currentFloor, setCurrentFloor] = useState('1');
+    const [currentFloor, setCurrentFloor] = useState('0');
     const [roomQuery, setRoomQuery] = useState('');
     const [pathData, setPathData] = useState<Record<number, GraphNode[]>>({});
     const [fullPath, setFullPath] = useState<GraphNode[]>([]);
