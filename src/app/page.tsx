@@ -173,7 +173,7 @@ export default function Home() {
                 <LandingHero />
 
                 {/* AI Upload Section */}
-                <div className="rounded-2xl px-6 pt-10 pb-20 -mt-12 text-black bg-white border border-gray-200 shadow-md overflow-hidden relative">
+                <div className="rounded-2xl px-6 pt-10 pb-8 -mt-12 text-black bg-white border border-gray-200 shadow-md overflow-hidden relative">
                     <div className="relative z-10 flex flex-col items-center">
                         <h2 className="text-xl font-bold mb-2 text-center text-black">
                             Upload a screenshot of your schedule
@@ -194,7 +194,7 @@ export default function Home() {
                             onClick={() => fileInputRef.current?.click()}
                             variant="outline" // Black outline, white bg
                             depth={4} // Smaller depth for "mini" feel
-                            className="w-auto mx-auto min-w-[140px]" // Center and restrict width
+                            className="w-auto mx-auto min-w-[140px] mt-12" // Center and restrict width
                             disabled={isAnalyzing}
                         >
                             {/* Progress Fill Layer (Custom overlay inside the button content) */}
