@@ -9,9 +9,11 @@ interface IndoorViewerProps {
     width: number;
     height: number;
     pathNodes?: GraphNode[];
+    fullPath?: GraphNode[];
+    currentFloor?: number;
 }
 
-export default function IndoorViewer({ src, width, height, pathNodes = [] }: IndoorViewerProps) {
+export default function IndoorViewer({ src, width, height, pathNodes = [], fullPath = [], currentFloor = 1 }: IndoorViewerProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [scale, setScale] = useState(0.5);
     const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -136,31 +138,59 @@ export default function IndoorViewer({ src, width, height, pathNodes = [] }: Ind
                             {/* Label start and end */}
                             {pathNodes.length > 0 && (
                                 <>
-                                    {/* Start label */}
-                                    <text
-                                        x={pathNodes[0].x}
-                                        y={-pathNodes[0].y - 15}
-                                        fill="#10b981"
-                                        fontSize="14"
-                                        fontWeight="bold"
-                                        textAnchor="middle"
-                                        style={{ textShadow: '0 0 3px white' }}
-                                    >
-                                        START
-                                    </text>
+                                    {/* Determine if this floor has the start node */}
+                                    {fullPath.length > 0 && fullPath[0].floor === currentFloor && (
+                                        <text
+                                            x={fullPath[0].x}
+                                            y={-fullPath[0].y - 15}
+                                            fill="#10b981"
+                                            fontSize="14"
+                                            fontWeight="bold"
+                                            textAnchor="middle"
+                                            style={{ textShadow: '0 0 3px white' }}
+                                        >
+                                            START
+                                        </text>
+                                    )}
                                     
-                                    {/* End label */}
-                                    <text
-                                        x={pathNodes[pathNodes.length - 1].x}
-                                        y={-pathNodes[pathNodes.length - 1].y - 15}
-                                        fill="#ef4444"
-                                        fontSize="14"
-                                        fontWeight="bold"
-                                        textAnchor="middle"
-                                        style={{ textShadow: '0 0 3px white' }}
-                                    >
-                                        {pathNodes[pathNodes.length - 1].room_num ? `ROOM ${pathNodes[pathNodes.length - 1].room_num}` : 'END'}
-                                    </text>
+                                    {/* Determine if this floor has the end node */}
+                                    {fullPath.length > 0 && fullPath[fullPath.length - 1].floor === currentFloor && (
+                                        <text
+                                            x={fullPath[fullPath.length - 1].x}
+                                            y={-fullPath[fullPath.length - 1].y - 15}
+                                            fill="#ef4444"
+                                            fontSize="14"
+                                            fontWeight="bold"
+                                            textAnchor="middle"
+                                            style={{ textShadow: '0 0 3px white' }}
+                                        >
+                                            {fullPath[fullPath.length - 1].room_num ? `ROOM ${fullPath[fullPath.length - 1].room_num}` : 'END'}
+                                        </text>
+                                    )}
+                                    
+                                    {/* Label floor transitions as ASCEND (except on target floor) */}
+                                    {fullPath.length > 0 && currentFloor !== fullPath[fullPath.length - 1].floor && (
+                                        pathNodes.map((node, i) => {
+                                            // Check if this node is a floor transition (connector type)
+                                            if (node.type === 1 && (i === pathNodes.length - 1)) {
+                                                return (
+                                                    <text
+                                                        key={`ascend-${i}`}
+                                                        x={node.x}
+                                                        y={-node.y - 15}
+                                                        fill="#f59e0b"
+                                                        fontSize="12"
+                                                        fontWeight="bold"
+                                                        textAnchor="middle"
+                                                        style={{ textShadow: '0 0 3px white' }}
+                                                    >
+                                                        ASCEND
+                                                    </text>
+                                                );
+                                            }
+                                            return null;
+                                        })
+                                    )}
                                 </>
                             )}
                         </svg>

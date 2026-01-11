@@ -18,9 +18,10 @@ interface BuildingClientProps {
 }
 
 export default function BuildingClient({ building, floors, targetRoom }: BuildingClientProps) {
-    const [currentFloor, setCurrentFloor] = useState(floors[0]?.floor || '1');
+    const [currentFloor, setCurrentFloor] = useState('1');
     const [roomQuery, setRoomQuery] = useState('');
     const [pathData, setPathData] = useState<Record<number, GraphNode[]>>({});
+    const [fullPath, setFullPath] = useState<GraphNode[]>([]);
     const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
     const [availableRooms, setAvailableRooms] = useState<number[]>([]);
     const [showRoomDropdown, setShowRoomDropdown] = useState(false);
@@ -98,6 +99,9 @@ export default function BuildingClient({ building, floors, targetRoom }: Buildin
         }
 
         console.log(`✅ Path found: ${result.path.length} nodes from ${entrance.name}`);
+
+        // Store full path for labeling
+        setFullPath(result.path);
 
         // Group path nodes by floor
         const pathByFloor: Record<number, GraphNode[]> = {};
@@ -202,6 +206,8 @@ export default function BuildingClient({ building, floors, targetRoom }: Buildin
                             width={currentFloorData.w}
                             height={currentFloorData.h}
                             pathNodes={currentFloorPath}
+                            fullPath={fullPath}
+                            currentFloor={parseInt(currentFloor)}
                         />
                     ) : (
                         <div className="h-full flex items-center justify-center text-slate-400">
