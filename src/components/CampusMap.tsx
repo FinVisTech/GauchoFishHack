@@ -19,9 +19,9 @@ const INITIAL_ZOOM = 15;
 // Bounding box for UCSB/Goleta area to improve search relevance
 const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
 
-    export default function CampusMap(props: CampusMapProps) {
-        const { initialQuery, initialBuildingId } = props;
-        const mapContainer = useRef<HTMLDivElement>(null);
+export default function CampusMap(props: CampusMapProps) {
+    const { initialQuery, initialBuildingId } = props;
+    const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<mapboxgl.Map | null>(null);
     const directionsRef = useRef<any>(null);
     const geolocateRef = useRef<mapboxgl.GeolocateControl | null>(null);
@@ -38,13 +38,17 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
     const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
     const [isSearching, setIsSearching] = useState(false);
     const [isNavigating, setIsNavigating] = useState(false);
+    const [pendingBuilding, setPendingBuilding] = useState<Building | null>(null);
+    const [showReRouteModal, setShowReRouteModal] = useState(false);
+    const [showMenu, setShowMenu] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
     const router = useRouter();
     const geoRequestedRef = useRef(false);
 
     // Re-plot class markers whenever parsedClasses or Map changes
     useEffect(() => {
         const { parsedClasses } = props; // Destructure props inside effect or use props directly consistently
-        
+
         if (!isMapLoaded || !map.current || !parsedClasses || parsedClasses.length === 0) {
             // If no classes, ensure markers are cleared
             classMarkersRef.current.forEach(m => m.remove());
@@ -284,10 +288,51 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
     }, [isMapLoaded]);
 
     useEffect(() => {
-        if (isMapLoaded && selectedBuilding) {
+        if (isMapLoaded && selectedBuilding && !isNavigating) {
             flyToBuilding(selectedBuilding.location);
         }
-    }, [isMapLoaded, selectedBuilding, flyToBuilding]);
+    }, [isMapLoaded, selectedBuilding, flyToBuilding, isNavigating]);
+
+    const applySearchResult = (building: Building) => {
+        if (isNavigating) {
+            setPendingBuilding(building);
+            setShowReRouteModal(true);
+        } else {
+            setSelectedBuilding(building);
+            flyToBuilding(building.location);
+            setHasSearched(true);
+            setIsSearching(false);
+        }
+    };
+
+    const handleConfirmReRoute = () => {
+        if (pendingBuilding && directionsRef.current && userLocation) {
+            // Update destination
+            directionsRef.current.setDestination([pendingBuilding.location.lng, pendingBuilding.location.lat]);
+
+            // Update selected building to show the new card
+            setSelectedBuilding(pendingBuilding);
+            flyToBuilding(pendingBuilding.location);
+
+            // Update search state if needed
+            setHasSearched(true);
+        }
+
+        // Reset modal state
+        setPendingBuilding(null);
+        setShowReRouteModal(false);
+        setSearchQuery(''); // Clear search query to show we "consumed" it
+        setIsSearching(false);
+    };
+
+    const handleCancelReRoute = () => {
+        // Just clear the pending state and the search query, 
+        // effectively ignoring the search attempt
+        setPendingBuilding(null);
+        setShowReRouteModal(false);
+        setSearchQuery('');
+        setIsSearching(false);
+    };
 
     const handleCustomGeolocate = () => {
         if (geolocateRef.current) {
@@ -322,9 +367,8 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
                     color: '#10b981' // Green for coordinate pins
                 };
 
-                setSelectedBuilding(tempBuilding);
-                flyToBuilding({ lat, lng });
-                setIsSearching(false);
+                applySearchResult(tempBuilding);
+                if (!isNavigating) setIsSearching(false); // Only clear if not waiting for confirmation
                 return;
             }
         }
@@ -332,9 +376,8 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
         // 2. Try Local Resolution
         const localResult = resolveBuilding(searchQuery);
         if (localResult) {
-            setSelectedBuilding(localResult);
-            flyToBuilding(localResult.location);
-            setIsSearching(false);
+            applySearchResult(localResult);
+            if (!isNavigating) setIsSearching(false);
             return;
         }
 
@@ -370,8 +413,7 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
                     color: '#64748b' // Slate-500 generic color
                 };
 
-                setSelectedBuilding(tempBuilding);
-                flyToBuilding({ lat, lng });
+                applySearchResult(tempBuilding);
             } else {
                 alert('No results found for that location.');
             }
@@ -379,7 +421,7 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
             console.error('Search error:', error);
             alert('Error searching for location.');
         } finally {
-            setIsSearching(false);
+            if (!isNavigating) setIsSearching(false);
         }
 
     };
@@ -393,9 +435,9 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
             if (building) {
                 setShowScheduleModal(false);
                 setScheduleText('');
-                setHasSearched(true);
-                setSelectedBuilding(building);
-                flyToBuilding(building.location);
+
+                // Use the same logic for schedule clicks
+                applySearchResult(building);
             }
         }
     };
@@ -446,7 +488,7 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
                 {/* Back */}
                 <button
                     onClick={() => router.push('/')}
-                    className="w-9 h-9 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex-none flex items-center justify-center transition-colors"
+                    className="w-9 h-9 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex-none flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                     <ArrowLeft className="h-4 w-4 text-slate-500" strokeWidth={1.8} />
                 </button>
@@ -454,7 +496,7 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
                 {/* Plus */}
                 <button
                     onClick={() => setShowScheduleModal(true)}
-                    className="w-9 h-9 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex-none flex items-center justify-center transition-colors"
+                    className="w-9 h-9 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex-none flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                     <Plus className="h-4 w-4 text-slate-500" strokeWidth={1.8} />
                 </button>
@@ -483,15 +525,15 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
                 {/* Profile */}
                 <button
                     onClick={() => setShowAccountModal(true)}
-                    className="w-9 h-9 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex-none flex items-center justify-center transition-colors"
+                    className="w-9 h-9 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex-none flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                     <User className="h-4 w-4 text-slate-500" strokeWidth={1.8} />
                 </button>
 
                 {/* Menu */}
                 <button
-                    onClick={() => {/* Menu placeholder */ }}
-                    className="w-9 h-9 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex-none flex items-center justify-center transition-colors"
+                    onClick={() => setShowMenu(true)}
+                    className="w-9 h-9 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex-none flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                     <Menu className="h-4 w-4 text-slate-500" strokeWidth={1.8} />
                 </button>
@@ -505,7 +547,7 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
                 {/* Back Button */}
                 <button
                     onClick={() => router.push('/')}
-                    className="w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+                    className="w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                     <ArrowLeft className="h-6 w-6 text-slate-500" strokeWidth={1.8} />
                 </button>
@@ -513,33 +555,57 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
                 {/* Add Schedule Button */}
                 <button
                     onClick={() => setShowScheduleModal(true)}
-                    className="w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+                    className="w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                     <Plus className="h-6 w-6 text-slate-500" strokeWidth={1.8} />
                 </button>
             </div>
 
             {/* Top Search Bar (Desktop) - Adjusted margins */}
-            <div className="absolute top-4 left-4 right-4 sm:left-32 sm:right-20 md:left-1/2 md:-translate-x-1/2 md:w-96 z-10 hidden sm:block">
-                <form onSubmit={handleSearchSubmit} className="relative shadow-lg rounded-xl">
-                    <input
-                        className="w-full h-12 pl-12 pr-4 rounded-xl border-none outline-none bg-white/90 backdrop-blur-sm text-slate-800 focus:ring-2 focus:ring-blue-500"
-                        placeholder="Search buildings..."
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        disabled={isSearching}
-                    />
-                    <Search className="absolute left-4 top-3.5 h-5 w-5 text-slate-500" />
-                    {searchQuery && (
-                        <button
-                            type="button"
-                            onClick={() => setSearchQuery('')}
-                            className="absolute right-3 top-3 p-1 rounded-full hover:bg-slate-200 text-slate-400"
-                        >
-                            <X className="h-4 w-4" />
-                        </button>
-                    )}
-                </form>
+            {/* Top Search Bar (Desktop) - Adjusted margins */}
+            <div className={`absolute top-4 left-4 right-4 sm:left-32 sm:right-20 md:left-1/2 md:-translate-x-1/2 md:w-96 z-10 hidden sm:block transition-all duration-300 ${isFocused ? 'scale-105' : ''}`}>
+
+                {/* Border Container: padding determines border thickness */}
+                <div className="relative rounded-xl overflow-hidden p-[3px] shadow-lg">
+
+                    {/* 1. Base Dark Blue Border (Always visible when focused, or transition it) */}
+                    <div className={`absolute inset-0 bg-[#003660] transition-opacity duration-300 ${isFocused ? 'opacity-100' : 'opacity-0'}`} />
+
+                    {/* 2. Rotating Gold Comet (Only visible when focused) */}
+                    <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] h-[300%] transition-opacity duration-300 ${isFocused ? 'opacity-100' : 'opacity-0'}`}>
+                        <div className="w-full h-full animate-spin-slow"
+                            style={{
+                                background: 'conic-gradient(from 0deg, transparent 0%, transparent 70%, #FEBC11 85%, transparent 100%)'
+                            }}
+                        />
+                    </div>
+
+                    {/* 3. Inner White Form (Masks the center) */}
+                    <form
+                        onSubmit={handleSearchSubmit}
+                        className="relative bg-white w-full h-full rounded-[9px] flex items-center z-10" // rounded-xl (12px) - 3px padding = 9px radius
+                    >
+                        <input
+                            className="w-full h-12 pl-12 pr-4 rounded-[9px] border-none outline-none bg-white/90 backdrop-blur-sm text-slate-800 focus:ring-0 placeholder:text-slate-400"
+                            placeholder="Search buildings..."
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
+                            disabled={isSearching}
+                        />
+                        <Search className={`absolute left-4 top-3.5 h-5 w-5 transition-colors ${isFocused ? 'text-[#003660]' : 'text-slate-500'}`} />
+                        {searchQuery && (
+                            <button
+                                type="button"
+                                onClick={() => setSearchQuery('')}
+                                className="absolute right-3 top-3 p-1 rounded-full hover:bg-slate-200 text-slate-400"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        )}
+                    </form>
+                </div>
             </div>
 
             {/* Top Right Controls Group */}
@@ -547,15 +613,15 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
                 {/* Account Button */}
                 <button
                     onClick={() => setShowAccountModal(true)}
-                    className="w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+                    className="w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                     <User className="h-6 w-6 text-slate-500" strokeWidth={1.8} />
                 </button>
 
                 {/* Menu Button */}
                 <button
-                    onClick={() => {/* Menu action placeholder */ }}
-                    className="w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+                    onClick={() => setShowMenu(true)}
+                    className="w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                     <Menu className="h-6 w-6 text-slate-500" strokeWidth={1.8} />
                 </button>
@@ -564,7 +630,7 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
             {/* Custom Bottom Right Location Button */}
             <button
                 onClick={handleCustomGeolocate}
-                className="absolute bottom-24 left-4 sm:bottom-6 sm:left-6 z-20 w-9 h-9 sm:w-12 sm:h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-colors group"
+                className="absolute bottom-24 left-4 sm:bottom-6 sm:left-6 z-20 w-9 h-9 sm:w-12 sm:h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 group"
                 title="Find My Location"
             >
                 <MapPin
@@ -590,8 +656,8 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
                             </div>
 
                             <div className="w-full space-y-3">
-                                <button className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors">
-                                    Sign in with UCSB Gold
+                                <button className="w-full h-12 bg-[#003660] hover:bg-[#002a4a] text-white font-bold rounded-md transition-colors shadow-sm">
+                                    Log In to GOLD with UCSB NetID
                                 </button>
                                 <p className="text-xs text-center text-slate-500">
                                     Connect your Gold account to sync your schedule
@@ -630,6 +696,37 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
                                 className="w-full h-12 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors"
                             >
                                 Find Classrooms
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Re-Route Confirmation Modal */}
+            {showReRouteModal && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={handleCancelReRoute}>
+                    <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm text-center transform scale-100 animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+                        <div className="w-16 h-16 bg-yellow-100/40 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Navigation className="h-8 w-8 text-yellow-600/80" />
+                        </div>
+                        <p className="text-xl font-bold text-slate-900 mb-1">
+                            Re-Route to?
+                        </p>
+                        <p className="text-lg font-bold text-blue-600 mb-6">
+                            {pendingBuilding?.name}
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={handleCancelReRoute}
+                                className="flex-1 h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors"
+                            >
+                                No, Cancel
+                            </button>
+                            <button
+                                onClick={handleConfirmReRoute}
+                                className="flex-1 h-11 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors"
+                            >
+                                Yes, Re-route
                             </button>
                         </div>
                     </div>
@@ -684,12 +781,49 @@ const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
                 </div>
             )}
 
-            {/* Hide the default Mapbox Geolocate Button */}
+            {/* Main Menu Popup */}
+            {showMenu && (
+                <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+                    <div className="absolute top-20 right-4 z-50 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl w-48 p-2 animate-in slide-in-from-top-4 fade-in duration-200 origin-top-right">
+                        <button
+                            onClick={() => setShowMenu(false)}
+                            className="absolute top-2 right-2 p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
+                        >
+                            <X className="h-4 w-4" />
+                        </button>
+                        <div className="flex flex-col gap-1 mt-2">
+                            {['About', 'Help & Feedback', 'Settings'].map((item) => (
+                                <button
+                                    key={item}
+                                    className="px-4 py-2 text-left text-slate-700 font-medium hover:bg-white/50 rounded-xl transition-all duration-300 hover:scale-105 hover:text-blue-600 hover:pl-6"
+                                >
+                                    {item}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </>
+            )}
+
             <style jsx global>{`
                 .mapboxgl-ctrl-geolocate {
                     display: none !important;
                 }
+
+                .animate-spin-slow {
+                    animation: spin-slow 3s linear infinite;
+                }
+
+                @keyframes spin-slow {
+                    from {
+                        transform: rotate(0deg);
+                    }
+                    to {
+                        transform: rotate(360deg);
+                    }
+                }
             `}</style>
-        </div>
+        </div >
     );
 }
