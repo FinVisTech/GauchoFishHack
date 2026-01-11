@@ -9,7 +9,55 @@ export type Building = {
     color: string;
 };
 
-export type Manifest = typeof floorplansManifest;
+// Graph node types
+export type GraphNode = {
+    id: number;
+    type: number | null;
+    room_num: number | null;
+    floor: number | null;
+    connector_id: number | null;
+    name: string | null;
+    x: number;
+    y: number;
+};
+
+// Graph edge types
+export type GraphEdge = {
+    id: number;
+    from_id: number;
+    to_id: number;
+    weight: number;
+    floor: number | null;
+};
+
+// Entrance types
+export type Entrance = {
+    id: number;
+    name: string;
+    lat: number;
+    lng: number;
+    node: number;
+};
+
+// Building manifest with optional routing data
+export type BuildingManifest = {
+    sourceZip?: string;
+    graphNodes?: string;
+    graphEdges?: string;
+    entrances?: string;
+    floors: {
+        [floor: string]: {
+            path: string;
+            w: number;
+            h: number;
+        };
+    };
+    skipped?: string[];
+};
+
+export type Manifest = {
+    [buildingId: string]: BuildingManifest;
+};
 
 export function getBuildings(): Building[] {
     return buildingsData as Building[];
@@ -35,7 +83,7 @@ export function resolveBuilding(query: string): Building | undefined {
 }
 
 export function getAvailableFloors(buildingId: string): string[] {
-    const bData = (floorplansManifest as any)[buildingId];
+    const bData = (floorplansManifest as Manifest)[buildingId];
     if (!bData || !bData.floors) return [];
     // Sort numerically if possible
     return Object.keys(bData.floors).sort((a, b) => {
@@ -47,7 +95,32 @@ export function getAvailableFloors(buildingId: string): string[] {
 }
 
 export function getFloorplan(buildingId: string, floor: string) {
-    const bData = (floorplansManifest as any)[buildingId];
+    const bData = (floorplansManifest as Manifest)[buildingId];
     if (!bData || !bData.floors) return null;
     return bData.floors[floor] || null;
 }
+
+// Check if a building has routing data
+export function hasRoutingData(buildingId: string): boolean {
+    const bData = (floorplansManifest as Manifest)[buildingId];
+    return !!(bData?.graphNodes && bData?.graphEdges && bData?.entrances);
+}
+
+// Get routing data paths for a building
+export function getRoutingDataPaths(buildingId: string): {
+    nodes: string | null;
+    edges: string | null;
+    entrances: string | null;
+} {
+    const bData = (floorplansManifest as Manifest)[buildingId];
+    if (!bData) return { nodes: null, edges: null, entrances: null };
+    
+    return {
+        nodes: bData.graphNodes || null,
+        edges: bData.graphEdges || null,
+        entrances: bData.entrances || null
+    };
+}
+
+// Re-export graph registry functions for convenience
+export { getGraph, hasGraph, getAvailableGraphs, getGraphStats } from '@/lib/routing/registry';

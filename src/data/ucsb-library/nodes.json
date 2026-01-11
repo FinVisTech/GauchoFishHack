@@ -1,0 +1,1212 @@
+[
+  {
+    "id": 0,
+    "type": 1,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": 1,
+    "name": null,
+    "x": 147.92298338902097,
+    "y": -669.7437988056479
+  },
+  {
+    "id": 1,
+    "type": 2,
+    "room_num": 1312,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 183.35471415958347,
+    "y": -537.3736087458205
+  },
+  {
+    "id": 2,
+    "type": 2,
+    "room_num": 1506,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 364.6917086869827,
+    "y": -571.7428180257454
+  },
+  {
+    "id": 3,
+    "type": 2,
+    "room_num": 1408,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 422.2412529544931,
+    "y": -590.3142140823114
+  },
+  {
+    "id": 4,
+    "type": 2,
+    "room_num": 1405,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 437.94622873665594,
+    "y": -586.4665784128517
+  },
+  {
+    "id": 5,
+    "type": 2,
+    "room_num": 1404,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 449.1113836560127,
+    "y": -585.9258660243878
+  },
+  {
+    "id": 6,
+    "type": 2,
+    "room_num": 1402,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 485.21996977405786,
+    "y": -585.3851536359224
+  },
+  {
+    "id": 7,
+    "type": 2,
+    "room_num": 1411,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 476.61340252941,
+    "y": -658.5196953561627
+  },
+  {
+    "id": 8,
+    "type": 2,
+    "room_num": 1411,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 476.61340237116747,
+    "y": -693.628096602409
+  },
+  {
+    "id": 9,
+    "type": 2,
+    "room_num": 1411,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 419.46358216257903,
+    "y": -694.9784197271366
+  },
+  {
+    "id": 10,
+    "type": 2,
+    "room_num": 1560,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 507.4621775659941,
+    "y": -383.6026644347523
+  },
+  {
+    "id": 11,
+    "type": 3,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": "paseo east",
+    "x": 746.5966527605984,
+    "y": -382.30134636793576
+  },
+  {
+    "id": 12,
+    "type": 1,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": 2,
+    "name": null,
+    "x": 874.9500481322492,
+    "y": -482.6302732241462
+  },
+  {
+    "id": 13,
+    "type": 1,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": 3,
+    "name": null,
+    "x": 674.8335303861606,
+    "y": -560.2787991822511
+  },
+  {
+    "id": 14,
+    "type": 1,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": 4,
+    "name": null,
+    "x": 570.513360289445,
+    "y": -725.2388484165019
+  },
+  {
+    "id": 15,
+    "type": 1,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": 5,
+    "name": null,
+    "x": 1054.1640342234841,
+    "y": -500.4719432945454
+  },
+  {
+    "id": 16,
+    "type": 1,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": 6,
+    "name": null,
+    "x": 1056.2307902322934,
+    "y": -616.9017130236265
+  },
+  {
+    "id": 17,
+    "type": 1,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 1204.0039141443403,
+    "y": -545.1621579447929
+  },
+  {
+    "id": 18,
+    "type": 3,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": "paseo west",
+    "x": 746.68305269853,
+    "y": -802.724109005289
+  },
+  {
+    "id": 19,
+    "type": 3,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": "mountain",
+    "x": 180.93002306804138,
+    "y": -740.3859750172237
+  },
+  {
+    "id": 20,
+    "type": 3,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": "davidson",
+    "x": 1015.6752191363298,
+    "y": -696.5570521897786
+  },
+  {
+    "id": 21,
+    "type": 1,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": 9,
+    "name": null,
+    "x": 1246.565872441248,
+    "y": -386.6265760398958
+  },
+  {
+    "id": 22,
+    "type": 1,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": 8,
+    "name": null,
+    "x": 1250.9651658721407,
+    "y": -757.7469684050355
+  },
+  {
+    "id": 23,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 750.4389265776265,
+    "y": -525.7655048655614
+  },
+  {
+    "id": 24,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 875.1810833867213,
+    "y": -521.4635213922063
+  },
+  {
+    "id": 25,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 973.4627826492462,
+    "y": -524.6900089972295
+  },
+  {
+    "id": 26,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 1052.8441551388848,
+    "y": -525.7655048655614
+  },
+  {
+    "id": 27,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 1015.0435011995738,
+    "y": -573.0873230674431
+  },
+  {
+    "id": 28,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 1014.0984844600877,
+    "y": -620.4091412595568
+  },
+  {
+    "id": 29,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 1074.5795305509191,
+    "y": -573.0873230674431
+  },
+  {
+    "id": 30,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 1093.4798574593735,
+    "y": -558.0303809133202
+  },
+  {
+    "id": 31,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 1155.8509358056854,
+    "y": -561.2568685178571
+  },
+  {
+    "id": 32,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 1214.4373707797686,
+    "y": -561.0389049016838
+  },
+  {
+    "id": 33,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 1211.9127409929156,
+    "y": -680.7558627120632
+  },
+  {
+    "id": 34,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 1262.316211866502,
+    "y": -702.3201675029835
+  },
+  {
+    "id": 35,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 1130.8259466037612,
+    "y": -526.5223673660998
+  },
+  {
+    "id": 36,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 1234.1004911842329,
+    "y": -457.3358142316297
+  },
+  {
+    "id": 37,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 149.392666098411,
+    "y": -738.5573444243608
+  },
+  {
+    "id": 38,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 157.89646610220314,
+    "y": -523.7806091875246
+  },
+  {
+    "id": 39,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 221.19598356985114,
+    "y": -521.751331523596
+  },
+  {
+    "id": 40,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 285.3870435325521,
+    "y": -522.7659703555623
+  },
+  {
+    "id": 41,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 362.3124565115727,
+    "y": -523.0076279822022
+  },
+  {
+    "id": 42,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 466.4247688025669,
+    "y": -522.80721415587
+  },
+  {
+    "id": 43,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 529.2989344686564,
+    "y": -555.832726427093
+  },
+  {
+    "id": 44,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 607.4886023154667,
+    "y": -524.6419648377212
+  },
+  {
+    "id": 45,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 676.8114005020298,
+    "y": -524.6419648377212
+  },
+  {
+    "id": 46,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 536.9360952223213,
+    "y": -438.3573325756891
+  },
+  {
+    "id": 47,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 530.7488685310234,
+    "y": -613.4361653597828
+  },
+  {
+    "id": 48,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 493.71450985797236,
+    "y": -598.6275011228598
+  },
+  {
+    "id": 49,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 462.8508669694342,
+    "y": -591.4331358406305
+  },
+  {
+    "id": 50,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 559.2609140073074,
+    "y": -697.3610011436132
+  },
+  {
+    "id": 51,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 530.6251995895107,
+    "y": -695.1883690386361
+  },
+  {
+    "id": 52,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 646.9606133179811,
+    "y": -697.4144910905412
+  },
+  {
+    "id": 53,
+    "type": 0,
+    "room_num": null,
+    "floor": 1,
+    "connector_id": null,
+    "name": null,
+    "x": 693.558183861202,
+    "y": -652.6692876754394
+  },
+  {
+    "id": 54,
+    "type": 2,
+    "room_num": 2312,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 52.11847427866521,
+    "y": -610.4994863390909
+  },
+  {
+    "id": 55,
+    "type": 2,
+    "room_num": 2310,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 52.635893320471766,
+    "y": -645.2422099519379
+  },
+  {
+    "id": 56,
+    "type": 2,
+    "room_num": 2316,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 69.71072222116312,
+    "y": -651.1308071738755
+  },
+  {
+    "id": 57,
+    "type": 2,
+    "room_num": 2318,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 72.29781752815146,
+    "y": -622.276680784768
+  },
+  {
+    "id": 58,
+    "type": 2,
+    "room_num": 2308,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 52.783504319312875,
+    "y": -693.1578741781373
+  },
+  {
+    "id": 59,
+    "type": 2,
+    "room_num": 2314,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 67.70921115259833,
+    "y": -692.9923919837745
+  },
+  {
+    "id": 60,
+    "type": 2,
+    "room_num": 2334,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 133.29758386907943,
+    "y": -698.4300516577026
+  },
+  {
+    "id": 61,
+    "type": 2,
+    "room_num": 2328,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 155.87403065390856,
+    "y": -653.1082708386729
+  },
+  {
+    "id": 62,
+    "type": 2,
+    "room_num": 2332,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 136.7652300723408,
+    "y": -648.9439181016488
+  },
+  {
+    "id": 63,
+    "type": 2,
+    "room_num": 2326,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 156.6871711426696,
+    "y": -625.8086251166377
+  },
+  {
+    "id": 64,
+    "type": 2,
+    "room_num": 2330,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 139.61122167799607,
+    "y": -625.8086251166377
+  },
+  {
+    "id": 65,
+    "type": 2,
+    "room_num": 2336,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 140.8309323875104,
+    "y": -598.0462735312672
+  },
+  {
+    "id": 66,
+    "type": 2,
+    "room_num": 2338,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 75.37312609361314,
+    "y": -593.4192149333599
+  },
+  {
+    "id": 67,
+    "type": 2,
+    "room_num": 2320,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 65.87173486757266,
+    "y": -518.9604007791293
+  },
+  {
+    "id": 68,
+    "type": 2,
+    "room_num": 2503,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 439.8142956893973,
+    "y": -457.51220482639405
+  },
+  {
+    "id": 69,
+    "type": 2,
+    "room_num": 2501,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 421.8305137402265,
+    "y": -416.98789288679006
+  },
+  {
+    "id": 70,
+    "type": 2,
+    "room_num": 2528,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 612.5324676567081,
+    "y": -703.7886703300826
+  },
+  {
+    "id": 71,
+    "type": 2,
+    "room_num": 2509,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 589.0204161547141,
+    "y": -454.74838149439455
+  },
+  {
+    "id": 72,
+    "type": 2,
+    "room_num": 2574,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 1131.1029370030026,
+    "y": -728.1103974856798
+  },
+  {
+    "id": 73,
+    "type": 2,
+    "room_num": 2595,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 1313.651669963856,
+    "y": -596.6745401667298
+  },
+  {
+    "id": 74,
+    "type": 2,
+    "room_num": 2593,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 1314.7160945280698,
+    "y": -551.8530957165752
+  },
+  {
+    "id": 75,
+    "type": 1,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": 8,
+    "name": null,
+    "x": 1240.6782485552528,
+    "y": -750.6975078072724
+  },
+  {
+    "id": 76,
+    "type": 1,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": 9,
+    "name": null,
+    "x": 1241.7655790012097,
+    "y": -391.45807692185326
+  },
+  {
+    "id": 77,
+    "type": 1,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": 6,
+    "name": null,
+    "x": 1068.4205714673856,
+    "y": -586.0978572558449
+  },
+  {
+    "id": 78,
+    "type": 1,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": 5,
+    "name": null,
+    "x": 1047.2377473185454,
+    "y": -500.12583782585364
+  },
+  {
+    "id": 79,
+    "type": 1,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": 2,
+    "name": null,
+    "x": 867.3384251740943,
+    "y": -477.2500136734779
+  },
+  {
+    "id": 80,
+    "type": 1,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": 3,
+    "name": null,
+    "x": 674.8335303861606,
+    "y": -560.2787991822511
+  },
+  {
+    "id": 81,
+    "type": 1,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": 4,
+    "name": null,
+    "x": 570.513360289445,
+    "y": -725.2388484165019
+  },
+  {
+    "id": 82,
+    "type": 1,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": 1,
+    "name": null,
+    "x": 147.92298338902097,
+    "y": -669.7437988056479
+  },
+  {
+    "id": 83,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 141.9763070267308,
+    "y": -734.9439347656843
+  },
+  {
+    "id": 84,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 57.4819455041621,
+    "y": -731.4197243487072
+  },
+  {
+    "id": 85,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 61.90573410162724,
+    "y": -672.5150645121123
+  },
+  {
+    "id": 86,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 62.79049183810773,
+    "y": -631.231456752709
+  },
+  {
+    "id": 87,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 148.17033862178442,
+    "y": -635.6481996501207
+  },
+  {
+    "id": 88,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 148.8171556800209,
+    "y": -606.9393708152871
+  },
+  {
+    "id": 89,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 64.69260708703013,
+    "y": -559.9929623837779
+  },
+  {
+    "id": 90,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 156.34656880705026,
+    "y": -560.7025456025196
+  },
+  {
+    "id": 91,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 186.6071418358646,
+    "y": -521.4442850418669
+  },
+  {
+    "id": 92,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 277.82593326738083,
+    "y": -523.2170424107313
+  },
+  {
+    "id": 93,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 419.45899595840535,
+    "y": -526.4072173366535
+  },
+  {
+    "id": 94,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 418.8610295227078,
+    "y": -462.437530524045
+  },
+  {
+    "id": 95,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 541.3953203193352,
+    "y": -526.0055744337146
+  },
+  {
+    "id": 96,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 542.3695622113304,
+    "y": -482.76407328725145
+  },
+  {
+    "id": 97,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 627.1285924545671,
+    "y": -480.5465604077553
+  },
+  {
+    "id": 98,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 631.0255591651307,
+    "y": -524.8968179941525
+  },
+  {
+    "id": 99,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 677.7891620278373,
+    "y": -527.1143308732717
+  },
+  {
+    "id": 100,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 750.8572914984305,
+    "y": -530.4406001919133
+  },
+  {
+    "id": 101,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 746.9603236693998,
+    "y": -676.7964501639456
+  },
+  {
+    "id": 102,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 543.3438033566426,
+    "y": -621.3586282165346
+  },
+  {
+    "id": 103,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 689.2152172473404,
+    "y": -698.7577272047213
+  },
+  {
+    "id": 104,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 633.2732236807808,
+    "y": -698.1455544051968
+  },
+  {
+    "id": 105,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 563.345731710687,
+    "y": -699.3699000042438
+  },
+  {
+    "id": 106,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 871.7529346776163,
+    "y": -527.8003320624923
+  },
+  {
+    "id": 107,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 993.6394209309668,
+    "y": -527.8003320624923
+  },
+  {
+    "id": 108,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 994.5166091056572,
+    "y": -645.0142010306072
+  },
+  {
+    "id": 109,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 1083.7338326311715,
+    "y": -653.8784158660238
+  },
+  {
+    "id": 110,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 1137.5473960841973,
+    "y": -653.0725781537295
+  },
+  {
+    "id": 111,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 1137.5473956347826,
+    "y": -694.9761391886714
+  },
+  {
+    "id": 112,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 1118.5600681813455,
+    "y": -532.8775230475742
+  },
+  {
+    "id": 113,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 1120.8198381478328,
+    "y": -430.2490152272881
+  },
+  {
+    "id": 114,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 1236.3737855798906,
+    "y": -417.4427514588925
+  },
+  {
+    "id": 115,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 1288.8344258097113,
+    "y": -433.377834878393
+  },
+  {
+    "id": 116,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 1283.2501016601536,
+    "y": -510.43654670133367
+  },
+  {
+    "id": 117,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 1286.7403032726972,
+    "y": -569.223605190104
+  },
+  {
+    "id": 118,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 1281.155979042454,
+    "y": -637.543700171649
+  },
+  {
+    "id": 119,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 1133.171407220588,
+    "y": -573.1957037361196
+  },
+  {
+    "id": 120,
+    "type": 0,
+    "room_num": null,
+    "floor": 2,
+    "connector_id": null,
+    "name": null,
+    "x": 1281.037123068865,
+    "y": -731.6052802709986
+  }
+]

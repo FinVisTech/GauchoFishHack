@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Layers, Search } from 'lucide-react';
 import IndoorViewer from '@/components/IndoorViewer';
-import type { Building } from '@/lib/data';
+import { getGraph, type Building, type GraphNode } from '@/lib/data';
 
 interface FloorInfo {
     floor: string;
@@ -14,13 +14,85 @@ interface FloorInfo {
 interface BuildingClientProps {
     building: Building;
     floors: FloorInfo[];
+    targetRoom?: number;
 }
 
-export default function BuildingClient({ building, floors }: BuildingClientProps) {
+export default function BuildingClient({ building, floors, targetRoom }: BuildingClientProps) {
     const [currentFloor, setCurrentFloor] = useState(floors[0]?.floor || '1');
     const [roomQuery, setRoomQuery] = useState('');
+    const [pathData, setPathData] = useState<Record<number, GraphNode[]>>({});
+    const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+
+    // Get user location on mount
+    useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setUserLocation([position.coords.latitude, position.coords.longitude]);
+                },
+                (error) => {
+                    console.warn('Could not get user location:', error);
+                }
+            );
+        }
+    }, []);
+
+    // Calculate path when targetRoom and userLocation are available
+    useEffect(() => {
+        if (!targetRoom) return;
+        
+        const graph = getGraph(building.id);
+        if (!graph) {
+            console.warn(`No graph data available for ${building.id}`);
+            return;
+        }
+
+        // Find nearest entrance (or use first if no user location)
+        let entrance;
+        if (userLocation) {
+            entrance = graph.findNearestEntrance(userLocation[0], userLocation[1]);
+        } else {
+            const entrances = graph.getEntrances();
+            entrance = entrances[0];
+        }
+
+        if (!entrance) {
+            console.error('No entrance found');
+            return;
+        }
+
+        // Find path to target room
+        const result = graph.findPathToRoom(targetRoom, entrance);
+        
+        if (!result) {
+            console.warn(`No path found to room ${targetRoom}`);
+            return;
+        }
+
+        // Group path nodes by floor
+        const pathByFloor: Record<number, GraphNode[]> = {};
+        for (const node of result.path) {
+            if (node.floor !== null) {
+                if (!pathByFloor[node.floor]) {
+                    pathByFloor[node.floor] = [];
+                }
+                pathByFloor[node.floor].push(node);
+            }
+        }
+
+        setPathData(pathByFloor);
+        
+        // Auto-switch to the floor where the target room is located
+        const targetNode = result.path[result.path.length - 1];
+        if (targetNode.floor !== null) {
+            setCurrentFloor(targetNode.floor.toString());
+        }
+
+        console.log(`✅ Path calculated: ${result.path.length} nodes, from ${entrance.name}`);
+    }, [targetRoom, building.id, userLocation]);
 
     const currentFloorData = floors.find(f => f.floor === currentFloor)?.data;
+    const currentFloorPath = pathData[parseInt(currentFloor)] || [];
 
     return (
         <div className="flex flex-col h-screen bg-white dark:bg-slate-950">
@@ -86,6 +158,7 @@ export default function BuildingClient({ building, floors }: BuildingClientProps
                             src={currentFloorData.path}
                             width={currentFloorData.w}
                             height={currentFloorData.h}
+                            pathNodes={currentFloorPath}
                         />
                     ) : (
                         <div className="h-full flex items-center justify-center text-slate-400">

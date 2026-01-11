@@ -1,0 +1,31 @@
+[
+    {
+        "id": 1,
+        "name": "Paseo West Entrance",
+        "lat": 34.4137111,
+        "lng": -119.8459429,
+        "node": 18
+    },
+    {
+        "id": 2,
+        "name": "Mountain Entrance",
+        "lat": 34.4144322,
+        "lng": -119.8457769,
+        "node": 19
+    },
+    {
+        "id": 3,
+        "name": "Paseo East Entrance",
+        "lat": 34.4137377,
+        "lng": -119.8451439,
+        "node": 11
+    },
+    {
+        "id": 4,
+        "name": "Davidson Entrance",
+        "lat": 34.4132879,
+        "lng": -119.8457836,
+        "node": 20
+    }
+
+]
