@@ -41,6 +41,8 @@ export default function BuildingClient({ building, floors, targetRoom }: Buildin
     useEffect(() => {
         if (!targetRoom) return;
         
+        console.log('🔍 BuildingClient: Calculating path for room', targetRoom);
+        
         const graph = getGraph(building.id);
         if (!graph) {
             console.warn(`No graph data available for ${building.id}`);
@@ -51,9 +53,11 @@ export default function BuildingClient({ building, floors, targetRoom }: Buildin
         let entrance;
         if (userLocation) {
             entrance = graph.findNearestEntrance(userLocation[0], userLocation[1]);
+            console.log('📍 Using nearest entrance:', entrance?.name);
         } else {
             const entrances = graph.getEntrances();
             entrance = entrances[0];
+            console.log('📍 Using first entrance (no user location):', entrance?.name);
         }
 
         if (!entrance) {
@@ -69,6 +73,8 @@ export default function BuildingClient({ building, floors, targetRoom }: Buildin
             return;
         }
 
+        console.log(`✅ Path found: ${result.path.length} nodes from ${entrance.name}`);
+
         // Group path nodes by floor
         const pathByFloor: Record<number, GraphNode[]> = {};
         for (const node of result.path) {
@@ -80,11 +86,14 @@ export default function BuildingClient({ building, floors, targetRoom }: Buildin
             }
         }
 
+        console.log('📊 Path by floor:', Object.keys(pathByFloor).map(f => `Floor ${f}: ${pathByFloor[parseInt(f)].length} nodes`));
+
         setPathData(pathByFloor);
         
         // Auto-switch to the floor where the target room is located
         const targetNode = result.path[result.path.length - 1];
         if (targetNode.floor !== null) {
+            console.log(`🔄 Switching to floor ${targetNode.floor}`);
             setCurrentFloor(targetNode.floor.toString());
         }
 
@@ -93,6 +102,16 @@ export default function BuildingClient({ building, floors, targetRoom }: Buildin
 
     const currentFloorData = floors.find(f => f.floor === currentFloor)?.data;
     const currentFloorPath = pathData[parseInt(currentFloor)] || [];
+
+    // Debug logging for current floor path
+    useEffect(() => {
+        console.log(`🗺️  Current floor: ${currentFloor}`);
+        console.log(`   Floor path nodes: ${currentFloorPath.length}`);
+        if (currentFloorPath.length > 0) {
+            console.log('   First:', currentFloorPath[0]);
+            console.log('   Last:', currentFloorPath[currentFloorPath.length - 1]);
+        }
+    }, [currentFloor, currentFloorPath]);
 
     return (
         <div className="flex flex-col h-screen bg-white dark:bg-slate-950">

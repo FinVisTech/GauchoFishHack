@@ -18,6 +18,16 @@ export default function IndoorViewer({ src, width, height, pathNodes = [] }: Ind
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
+    // Debug logging
+    useEffect(() => {
+        if (pathNodes.length > 0) {
+            console.log('📊 IndoorViewer received path nodes:', pathNodes.length);
+            console.log('  Dimensions:', { width, height });
+            console.log('  First node:', pathNodes[0]);
+            console.log('  Last node:', pathNodes[pathNodes.length - 1]);
+        }
+    }, [pathNodes, width, height]);
+
     // Reset view when src changes
     useEffect(() => {
         setScale(0.5);
@@ -88,7 +98,7 @@ export default function IndoorViewer({ src, width, height, pathNodes = [] }: Ind
                                 height: '100%',
                                 pointerEvents: 'none'
                             }}
-                            viewBox={`0 ${-height} ${width} ${height}`}
+                            viewBox={`0 0 ${width} ${height}`}
                             preserveAspectRatio="xMidYMid meet"
                         >
                             {/* Draw path lines */}
@@ -99,9 +109,9 @@ export default function IndoorViewer({ src, width, height, pathNodes = [] }: Ind
                                     <line
                                         key={`line-${i}`}
                                         x1={prevNode.x}
-                                        y1={prevNode.y}
+                                        y1={-prevNode.y}
                                         x2={node.x}
-                                        y2={node.y}
+                                        y2={-node.y}
                                         stroke="#3b82f6"
                                         strokeWidth="4"
                                         strokeDasharray="8 4"
@@ -115,7 +125,7 @@ export default function IndoorViewer({ src, width, height, pathNodes = [] }: Ind
                                 <circle
                                     key={`node-${i}`}
                                     cx={node.x}
-                                    cy={node.y}
+                                    cy={-node.y}
                                     r="6"
                                     fill={i === 0 ? '#10b981' : i === pathNodes.length - 1 ? '#ef4444' : '#3b82f6'}
                                     stroke="white"
@@ -129,7 +139,7 @@ export default function IndoorViewer({ src, width, height, pathNodes = [] }: Ind
                                     {/* Start label */}
                                     <text
                                         x={pathNodes[0].x}
-                                        y={pathNodes[0].y - 15}
+                                        y={-pathNodes[0].y - 15}
                                         fill="#10b981"
                                         fontSize="14"
                                         fontWeight="bold"
@@ -142,7 +152,7 @@ export default function IndoorViewer({ src, width, height, pathNodes = [] }: Ind
                                     {/* End label */}
                                     <text
                                         x={pathNodes[pathNodes.length - 1].x}
-                                        y={pathNodes[pathNodes.length - 1].y - 15}
+                                        y={-pathNodes[pathNodes.length - 1].y - 15}
                                         fill="#ef4444"
                                         fontSize="14"
                                         fontWeight="bold"
