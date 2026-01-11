@@ -209,7 +209,33 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
         setIsSearching(true);
         setSelectedBuilding(null);
 
-        // 1. Try Local Resolution first
+        // 1. Check if input is lat/long coordinates
+        // Matches formats: "34.412, -119.847" or "34.412,-119.847"
+        const coordRegex = /^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/;
+        const coordMatch = searchQuery.trim().match(coordRegex);
+
+        if (coordMatch) {
+            const lat = parseFloat(coordMatch[1]);
+            const lng = parseFloat(coordMatch[2]);
+
+            // Basic validation for reasonable coordinates
+            if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                const tempBuilding: Building = {
+                    id: 'COORDINATE_RESULT',
+                    name: `Location (${lat.toFixed(6)}, ${lng.toFixed(6)})`,
+                    abbr: ['Coordinates'],
+                    location: { lat, lng },
+                    color: '#10b981' // Green for coordinate pins
+                };
+
+                setSelectedBuilding(tempBuilding);
+                flyToBuilding({ lat, lng });
+                setIsSearching(false);
+                return;
+            }
+        }
+
+        // 2. Try Local Resolution
         const localResult = resolveBuilding(searchQuery);
         if (localResult) {
             setSelectedBuilding(localResult);
@@ -218,33 +244,34 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
             return;
         }
 
-        // 2. Fallback to Mapbox Geocoding API
-        try {
-            const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-            if (!token) throw new Error('No token');
 
-            // Bias the search by appending "UCSB" or using proximity more aggressively
-            const enhancedQuery = `${searchQuery} UCSB`;
-            const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(enhancedQuery)}.json`;
+        // 3. Fallback to Google Places API
+        try {
+            const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
+            if (!googleApiKey) throw new Error('No Google API key');
+
+            // Use Google Places Text Search API
+            const textSearchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json`;
             const params = new URLSearchParams({
-                access_token: token,
-                bbox: UCSB_BBOX.join(','), // Bias to UCSB
-                proximity: `${UCSB_CENTER[0]},${UCSB_CENTER[1]}`, // Bias to center
-                limit: '1'
+                query: `${searchQuery} UCSB Santa Barbara`,
+                key: googleApiKey,
+                location: `${UCSB_CENTER[1]},${UCSB_CENTER[0]}`, // lat,lng format for Google
+                radius: '2000' // 2km radius around UCSB
             });
 
-            const res = await fetch(`${endpoint}?${params}`);
+            const res = await fetch(`${textSearchUrl}?${params}`);
             const data = await res.json();
 
-            if (data.features && data.features.length > 0) {
-                const feature = data.features[0];
-                const [lng, lat] = feature.center;
+            if (data.status === 'OK' && data.results && data.results.length > 0) {
+                const place = data.results[0];
+                const lat = place.geometry.location.lat;
+                const lng = place.geometry.location.lng;
 
                 // Create a temporary building object for the result
                 const tempBuilding: Building = {
-                    id: 'MAPBOX_RESULT',
-                    name: feature.text, // e.g. "Old Gym"
-                    abbr: [feature.text],
+                    id: 'GOOGLE_RESULT',
+                    name: place.name,
+                    abbr: [place.name],
                     location: { lat, lng },
                     color: '#64748b' // Slate-500 generic color
                 };
@@ -252,26 +279,6 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
                 setSelectedBuilding(tempBuilding);
                 flyToBuilding({ lat, lng });
             } else {
-                // If "Old Gym UCSB" fails, try raw query as last resort
-                if (searchQuery !== enhancedQuery) {
-                    const rawEndpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json`;
-                    const rawRes = await fetch(`${rawEndpoint}?${params}`);
-                    const rawData = await rawRes.json();
-                    if (rawData.features && rawData.features.length > 0) {
-                        const feature = rawData.features[0];
-                        const [lng, lat] = feature.center;
-                        const tempBuilding: Building = {
-                            id: 'MAPBOX_RESULT',
-                            name: feature.text,
-                            abbr: [feature.text],
-                            location: { lat, lng },
-                            color: '#64748b'
-                        };
-                        setSelectedBuilding(tempBuilding);
-                        flyToBuilding({ lat, lng });
-                        return;
-                    }
-                }
                 alert('No results found for that location.');
             }
         } catch (error) {
@@ -280,6 +287,7 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
         } finally {
             setIsSearching(false);
         }
+
     };
 
     const handleScheduleImport = () => {
