@@ -5,7 +5,7 @@ import mapboxgl from 'mapbox-gl';
 import MapboxDirections from '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions';
 import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
 import { useRouter } from 'next/navigation';
-import { Search, Navigation, Map as MapIcon, X, User, Plus, Calendar, ArrowLeft, Menu } from 'lucide-react';
+import { Search, Navigation, Map as MapIcon, X, User, Plus, Calendar, ArrowLeft, Menu, MapPin } from 'lucide-react';
 import { getBuildings, resolveBuilding, type Building } from '@/lib/data';
 
 interface CampusMapProps {
@@ -92,22 +92,7 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
         map.current.addControl(directions as any, 'top-left');
         directionsRef.current = directions;
 
-        // NavigationControl removed as requested (was behind profile button)
-
-        const geolocateControl = new mapboxgl.GeolocateControl({
-            positionOptions: { enableHighAccuracy: true },
-            trackUserLocation: true,
-            showUserHeading: true
-        });
-
-        geolocateControl.on('geolocate', (e) => {
-            const accuracy = Math.round(e.coords.accuracy);
-            console.log('Geolocation accuracy:', accuracy, 'meters');
-            setUserLocation([e.coords.longitude, e.coords.latitude]);
-        });
-
-        // Moved to bottom-right to avoid overlapping with top-right profile button
-        map.current.addControl(geolocateControl, 'bottom-right');
+        // Default GeolocateControl removed in favor of custom button
 
         map.current.on('load', () => {
             setIsMapLoaded(true);
@@ -175,6 +160,38 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
             flyToBuilding(selectedBuilding.location);
         }
     }, [isMapLoaded, selectedBuilding, flyToBuilding]);
+
+    const handleCustomGeolocate = () => {
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser');
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                // Fly to user location
+                if (map.current) {
+                    map.current.flyTo({
+                        center: [longitude, latitude],
+                        zoom: 17,
+                        essential: true
+                    });
+
+                    // Add a blue marker for the user
+                    new mapboxgl.Marker({ color: '#3b82f6' })
+                        .setLngLat([longitude, latitude])
+                        .addTo(map.current);
+                }
+
+                setUserLocation([longitude, latitude]);
+            },
+            (error) => {
+                console.error('Unable to retrieve your location', error);
+                alert('Unable to retrieve your location. Please check your browser permissions.');
+            }
+        );
+    };
 
     const handleSearchSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -421,6 +438,18 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
                     <Menu className="h-6 w-6 text-slate-500" strokeWidth={1.8} />
                 </button>
             </div>
+
+            {/* Custom Bottom Right Location Button */}
+            <button
+                onClick={handleCustomGeolocate}
+                className="absolute bottom-6 right-4 sm:bottom-6 sm:right-6 z-20 w-9 h-9 sm:w-12 sm:h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-colors group"
+                title="Find My Location"
+            >
+                <MapPin
+                    className={`h-4 w-4 sm:h-6 sm:w-6 group-hover:scale-110 transition-transform ${userLocation ? 'text-green-500' : 'text-red-500'}`}
+                    strokeWidth={2}
+                />
+            </button>
 
             {/* Account Modal */}
             {showAccountModal && (
