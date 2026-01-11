@@ -15,13 +15,29 @@ interface IndoorViewerProps {
 
 export default function IndoorViewer({ src, width, height, pathNodes = [], fullPath = [], currentFloor = 1 }: IndoorViewerProps) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const [scale, setScale] = useState(0.5);
+    const [scale, setScale] = useState(1); // Will be calculated based on container size
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
     const touchStartDistance = useRef<number>(0);
+
+    // Calculate initial scale based on container and image dimensions
+    useEffect(() => {
+        if (!containerRef.current) return;
+        
+        const containerWidth = containerRef.current.clientWidth;
+        const containerHeight = containerRef.current.clientHeight;
+        
+        // Calculate scale to fit image in container with padding
+        const scaleX = (containerWidth * 0.9) / width;  // 90% of container width
+        const scaleY = (containerHeight * 0.9) / height; // 90% of container height
+        const calculatedScale = Math.min(scaleX, scaleY, 1); // Don't exceed 1x
+        
+        setScale(calculatedScale);
+        console.log(`📐 Calculated initial scale: ${calculatedScale.toFixed(2)} (image: ${width}x${height}, container: ${containerWidth}x${containerHeight})`);
+    }, [width, height]);
 
     // Debug logging
     useEffect(() => {
@@ -35,7 +51,6 @@ export default function IndoorViewer({ src, width, height, pathNodes = [], fullP
 
     // Reset view when src changes
     useEffect(() => {
-        setScale(0.5);
         setPosition({ x: 0, y: 0 });
         setImageLoaded(false);
         setImageError(false);
@@ -97,7 +112,15 @@ export default function IndoorViewer({ src, width, height, pathNodes = [], fullP
             <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 bg-white dark:bg-slate-800 rounded-lg shadow-md p-2 md:p-1">
                 <button onClick={() => setScale(s => Math.min(s * 1.2, 4))} className="p-3 md:p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition" title="Zoom in"><ZoomIn className="h-5 md:h-4 w-5 md:w-4" /></button>
                 <button onClick={() => setScale(s => Math.max(s / 1.2, 0.1))} className="p-3 md:p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition" title="Zoom out"><ZoomOut className="h-5 md:h-4 w-5 md:w-4" /></button>
-                <button onClick={() => { setScale(0.5); setPosition({ x: 0, y: 0 }); }} className="p-3 md:p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition" title="Reset view"><Maximize className="h-5 md:h-4 w-5 md:w-4" /></button>
+                <button onClick={() => { 
+                    if (!containerRef.current) return;
+                    const containerWidth = containerRef.current.clientWidth;
+                    const containerHeight = containerRef.current.clientHeight;
+                    const scaleX = (containerWidth * 0.9) / width;
+                    const scaleY = (containerHeight * 0.9) / height;
+                    setScale(Math.min(scaleX, scaleY, 1));
+                    setPosition({ x: 0, y: 0 }); 
+                }} className="p-3 md:p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition" title="Reset view"><Maximize className="h-5 md:h-4 w-5 md:w-4" /></button>
             </div>
 
             {/* Image loading debug info */}
