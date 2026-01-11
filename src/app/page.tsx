@@ -10,8 +10,8 @@ import { type Building } from '@/lib/data';
 
 interface ParsedClass {
     original: string;
-    building: Building;
-    room: string;
+    building?: Building | { id?: string; name?: string; location?: { lat: number; lng: number } } | null;
+    room?: string | null;
     time?: string;
     course?: string;
     days?: string;
@@ -51,16 +51,20 @@ export default function Home() {
     };
 
     useEffect(() => {
-        // Request location access on page load
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                () => {
-                    console.log("Location access granted.");
-                },
-                (error) => {
-                    console.error("Location access denied or error:", error);
-                }
-            );
+        // Request location access on page load (non-fatal)
+        try {
+            if (typeof navigator !== 'undefined' && navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    () => {
+                        console.log("[home] Location access granted.");
+                    },
+                    (error) => {
+                        console.warn("[home] Location access denied or error:", error?.message || error);
+                    }
+                );
+            }
+        } catch (err) {
+            console.warn("[home] Geolocation check failed:", err);
         }
     }, []);
 
@@ -127,24 +131,23 @@ export default function Home() {
                 }
 
                 const data = await res.json();
+                console.log("[home] AI raw response:", data);
 
                 clearInterval(progressInterval);
                 setUploadProgress(100);
 
-                // Transform API response to ParsedClass format
-                const newParsed: ParsedClass[] = data.classes
-                    .filter((c: any) => c.buildingDetails) // Only keep resolved buildings
-                    .map((c: any) => ({
-                        original: `${c.course}: ${c.location}`,
-                        building: c.buildingDetails,
-                        room: c.room,
-                        time: c.time || (c.startTime && c.endTime ? `${c.startTime} - ${c.endTime}` : undefined),
-                        course: c.course,
-                        days: c.days,
-                        startTime: c.startTime,
-                        endTime: c.endTime,
-                        type: getClassType(c.startTime, c.endTime)
-                    }));
+                // Transform API response to ParsedClass format (keep all, even if building not resolved)
+                const newParsed: ParsedClass[] = (data.classes || []).map((c: any) => ({
+                    original: `${c.course || ''}: ${c.location || ''}`,
+                    building: c.buildingDetails || (c.building ? { id: c.building, name: c.building } : null),
+                    room: c.room || null,
+                    time: c.time || (c.startTime && c.endTime ? `${c.startTime} - ${c.endTime}` : undefined),
+                    course: c.course,
+                    days: c.days,
+                    startTime: c.startTime,
+                    endTime: c.endTime,
+                    type: getClassType(c.startTime, c.endTime)
+                }));
 
                 setParsed(newParsed);
                 setUploadSuccess(true);
@@ -244,11 +247,12 @@ export default function Home() {
                 {/* Parsed Results */}
                 {parsed.length > 0 && (
                     <div className="space-y-3">
-                        <h2 className="font-semibold text-black uppercase tracking-wider text-sm">Found {parsed.length} Classes</h2>
+                        <h2 className="font-semibold text-black uppercase tracking-wider text-sm">
+                            You’ve got {parsed.length} classroom{parsed.length === 1 ? '' : 's'}
+                        </h2>
                         {parsed.map((item, i) => (
-                            <Link
+                            <div
                                 key={i}
-                                href={`/map?b=${item.building.id}&r=${item.room}`}
                                 className="block bg-white p-4 rounded-xl border border-gray-200 hover:border-blue-500 shadow-sm hover:shadow-md transition-all group"
                             >
                                 <div className="flex items-center justify-between">
@@ -257,53 +261,37 @@ export default function Home() {
                                             <div className="font-bold text-lg text-black group-hover:text-blue-600 transition-colors">
                                                 {item.course || "Unknown Course"}
                                             </div>
-                                            {item.type && (
-                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider border ${item.type === 'Lecture'
-                                                    ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-800'
-                                                    : 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-800'
-                                                    }`}>
-                                                    {item.type}
-                                                </span>
-                                            )}
-                                            {item.days && (
-                                                <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-                                                    {item.days}
-                                                </span>
-                                            )}
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm text-black">
                                             <div className="flex items-center gap-1.5">
                                                 <MapPin className="h-4 w-4 text-black" />
                                                 <span className="font-medium text-black">
-                                                    {item.building.name}
+                                                    {item.building?.name || 'Unknown'}
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-1.5">
                                                 <div className="w-4 h-4 flex items-center justify-center text-xs font-bold bg-gray-100 rounded text-black">#</div>
-                                                <span>Room {item.room}</span>
+                                                <span>Room {item.room || '—'}</span>
                                             </div>
-                                            {(item.startTime || item.time) && (
-                                                <div className="col-span-2 flex items-center gap-1.5 mt-1 text-black">
-                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                    <span>
-                                                        {item.startTime && item.endTime
-                                                            ? `${item.startTime} - ${item.endTime}`
-                                                            : item.time}
-                                                    </span>
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
                                     <div className="pl-4">
-                                        <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                            <ArrowRight className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                        </div>
+                                        {item.building?.id && item.room ? (
+                                            <Link
+                                                href={`/map?b=${encodeURIComponent(item.building.id)}&r=${encodeURIComponent(item.room)}`}
+                                                className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center group-hover:scale-110 transition-transform"
+                                            >
+                                                <ArrowRight className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                            </Link>
+                                        ) : (
+                                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center opacity-50 cursor-not-allowed">
+                                                <ArrowRight className="h-5 w-5 text-gray-400" />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                            </Link>
+                            </div>
                         ))}
                     </div>
                 )}
@@ -315,12 +303,13 @@ export default function Home() {
                         room: p.room,
                         time: p.time,
                         type: p.type,
-                        building: {
-                            id: p.building.id,
-                            name: p.building.name,
-                            location: p.building.location,
-                            color: p.building.color
-                        }
+                        building: p.building && 'id' in p.building
+                          ? {
+                              id: p.building.id,
+                              name: p.building.name,
+                              location: p.building.location
+                            }
+                          : null
                     }))))}` : "/map"} className="w-full md:flex-1 flex">
                         <ThreeDButton
                             variant="primary"

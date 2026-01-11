@@ -24,17 +24,24 @@ export async function POST(req: Request) {
     ];
 
     const prompt = `
-    Extract the class schedule from this image. Return a JSON array where each object has:
-    - 'course' (e.g. 'CMPSC 16')
-    - 'location' (e.g. 'PHELP 3526')
-    - 'building' (the building abbreviation or name from the location)
-    - 'room' (the room number)
-    - 'days' (e.g. 'MW', 'TR', 'F' - standard university codes)
-    - 'startTime' (e.g. '14:00' - 24h format)
-    - 'endTime' (e.g. '15:15' - 24h format)
-    
-    Ignore online classes or locations that are not physical rooms. 
-    Output ONLY valid JSON in the format: { "classes": [...] }
+    You are extracting EVERY in-person class meeting visible in the screenshot (list view or weekly grid). Treat each meeting block as one entry, even if the course repeats on different days/times/rooms.
+
+    For each meeting, return:
+      - course (e.g., "ECON 100B")
+      - building (building name or abbreviation exactly as shown, e.g., "Broida Hall" or "PHELP")
+      - room (room number/text exactly as shown, e.g., "1610")
+      - location (combined string if present, e.g., "Broida Hall, 1610")
+      - days (if shown, e.g., "TR", "MW", "F")
+      - startTime (24h, e.g., "15:30")
+      - endTime (24h, e.g., "16:45")
+
+    Rules:
+    - Include all in-person classes; do NOT deduplicate.
+    - If location line is like "Broida Hall, 1610", set building="Broida Hall", room="1610".
+    - If abbreviation + room like "PHELP 3526", set building="PHELP", room="3526".
+    - If any field is missing, set it to null.
+    - Ignore online/remote/TBA/no-location items.
+    - Output ONLY valid JSON exactly as: { "classes": [ ... ] } with no extra text.
     `;
 
     let lastError;
@@ -75,10 +82,13 @@ export async function POST(req: Request) {
     
     // Clean up markdown code blocks if Gemini includes them
     const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    console.log("[api/parse-schedule] Raw LLM text:", text);
+    console.log("[api/parse-schedule] Cleaned JSON string:", cleanJson);
     
     let data;
     try {
         data = JSON.parse(cleanJson);
+        console.log("[api/parse-schedule] Parsed JSON object:", data);
     } catch (e) {
         console.error("Failed to parse Gemini JSON:", cleanJson);
         throw new Error("Invalid JSON from AI");
@@ -86,23 +96,29 @@ export async function POST(req: Request) {
 
     // Enrich with building data
     const enrichedClasses = (data.classes || []).map((cls: any) => {
-        // Attempt to split location if building field is weak
-        let abbr = cls.building;
-        let room = "";
-        
-        if (cls.location) {
-            const parts = cls.location.split(' ');
+        // Try to parse building/room from location if missing
+        let building = cls.building;
+        let room = cls.room || "";
+
+        if ((!building || !room) && cls.location) {
+            // Handle formats like "Broida Hall, 1610" or "PHELP 3526"
+            const loc = cls.location.replace(',', ' ');
+            const parts = loc.split(/\s+/).filter(Boolean);
             if (parts.length >= 2) {
-                if (!abbr) abbr = parts[0];
-                room = parts.slice(1).join(' ');
+                // assume last token is room
+                const maybeRoom = parts[parts.length - 1];
+                const maybeBuilding = parts.slice(0, parts.length - 1).join(' ');
+                if (!building) building = maybeBuilding;
+                if (!room) room = maybeRoom;
             }
         }
 
-        const resolved = resolveBuilding(abbr);
+        const resolved = building ? resolveBuilding(building) : null;
         return {
             ...cls,
+            building,
+            room: room || null,
             buildingDetails: resolved || null,
-            room: room || cls.room
         };
     });
 
