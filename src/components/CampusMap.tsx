@@ -302,8 +302,67 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
         <div className="relative h-full w-full bg-slate-200">
             <div ref={mapContainer} className="h-full w-full" />
 
+            {/* --- Mobile Header (Visible on < sm) --- */}
+            <div className="absolute top-2 left-2 right-2 z-20 flex sm:hidden items-center gap-2">
+                {/* Back */}
+                <button
+                    onClick={() => router.push('/')}
+                    className="w-9 h-9 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex-none flex items-center justify-center transition-colors"
+                >
+                    <ArrowLeft className="h-4 w-4 text-slate-500" strokeWidth={1.8} />
+                </button>
+
+                {/* Plus */}
+                <button
+                    onClick={() => setShowScheduleModal(true)}
+                    className="w-9 h-9 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex-none flex items-center justify-center transition-colors"
+                >
+                    <Plus className="h-4 w-4 text-slate-500" strokeWidth={1.8} />
+                </button>
+
+                {/* Search Bar (Condensed) */}
+                <form onSubmit={handleSearchSubmit} className="flex-1 relative shadow-lg rounded-xl h-9">
+                    <input
+                        className="w-full h-full pl-9 pr-8 rounded-xl border-none outline-none bg-white/90 backdrop-blur-sm text-slate-800 text-sm focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400"
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        disabled={isSearching}
+                    />
+                    <Search className="absolute left-3 top-2 h-4 w-4 text-slate-500" />
+                    {searchQuery && (
+                        <button
+                            type="button"
+                            onClick={() => setSearchQuery('')}
+                            className="absolute right-2 top-2 p-0.5 rounded-full hover:bg-slate-200 text-slate-400"
+                        >
+                            <X className="h-3 w-3" />
+                        </button>
+                    )}
+                </form>
+
+                {/* Profile */}
+                <button
+                    onClick={() => setShowAccountModal(true)}
+                    className="w-9 h-9 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex-none flex items-center justify-center transition-colors"
+                >
+                    <User className="h-4 w-4 text-slate-500" strokeWidth={1.8} />
+                </button>
+
+                {/* Menu */}
+                <button
+                    onClick={() => {/* Menu placeholder */ }}
+                    className="w-9 h-9 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex-none flex items-center justify-center transition-colors"
+                >
+                    <Menu className="h-4 w-4 text-slate-500" strokeWidth={1.8} />
+                </button>
+            </div>
+
+
+            {/* --- Desktop Controls (Visible on sm+) --- */}
+
             {/* Top Left Controls Group */}
-            <div className="absolute top-4 left-4 z-10 flex flex-col gap-3 sm:flex-row">
+            <div className="absolute top-4 left-4 z-10 hidden sm:flex flex-col gap-3 sm:flex-row">
                 {/* Back Button */}
                 <button
                     onClick={() => router.push('/')}
@@ -321,8 +380,8 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
                 </button>
             </div>
 
-            {/* Top Search Bar - Adjusted margins for new buttons */}
-            <div className="absolute top-4 left-4 right-4 sm:left-32 sm:right-20 md:left-1/2 md:-translate-x-1/2 md:w-96 z-10 mt-32 sm:mt-0">
+            {/* Top Search Bar (Desktop) - Adjusted margins */}
+            <div className="absolute top-4 left-4 right-4 sm:left-32 sm:right-20 md:left-1/2 md:-translate-x-1/2 md:w-96 z-10 hidden sm:block">
                 <form onSubmit={handleSearchSubmit} className="relative shadow-lg rounded-xl">
                     <input
                         className="w-full h-12 pl-12 pr-4 rounded-xl border-none outline-none bg-white/90 backdrop-blur-sm text-slate-800 focus:ring-2 focus:ring-blue-500"
@@ -345,7 +404,7 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
             </div>
 
             {/* Top Right Controls Group */}
-            <div className="absolute top-4 right-4 z-10 flex flex-col gap-3 sm:flex-row">
+            <div className="absolute top-4 right-4 z-10 hidden sm:flex flex-col gap-3 sm:flex-row">
                 {/* Account Button */}
                 <button
                     onClick={() => setShowAccountModal(true)}
