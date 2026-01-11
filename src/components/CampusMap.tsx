@@ -11,6 +11,7 @@ import { getBuildings, resolveBuilding, type Building } from '@/lib/data';
 interface CampusMapProps {
     initialQuery?: string | null;
     initialBuildingId?: string | null;
+    parsedClasses?: any[];
 }
 
 const UCSB_CENTER = [-119.845, 34.414];
@@ -18,12 +19,14 @@ const INITIAL_ZOOM = 15;
 // Bounding box for UCSB/Goleta area to improve search relevance
 const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
 
-export default function CampusMap({ initialQuery, initialBuildingId }: CampusMapProps) {
-    const mapContainer = useRef<HTMLDivElement>(null);
+    export default function CampusMap(props: CampusMapProps) {
+        const { initialQuery, initialBuildingId } = props;
+        const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<mapboxgl.Map | null>(null);
     const directionsRef = useRef<any>(null);
     const geolocateRef = useRef<mapboxgl.GeolocateControl | null>(null);
     const markersRef = useRef<mapboxgl.Marker[]>([]);
+    const classMarkersRef = useRef<mapboxgl.Marker[]>([]); // New ref for class markers
     const [tokenError, setTokenError] = useState(false);
     const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
     const [searchQuery, setSearchQuery] = useState(initialQuery || '');
@@ -36,6 +39,80 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
     const [isSearching, setIsSearching] = useState(false);
     const [isNavigating, setIsNavigating] = useState(false);
     const router = useRouter();
+    const geoRequestedRef = useRef(false);
+
+    // Re-plot class markers whenever parsedClasses or Map changes
+    useEffect(() => {
+        const { parsedClasses } = props; // Destructure props inside effect or use props directly consistently
+        
+        if (!isMapLoaded || !map.current || !parsedClasses || parsedClasses.length === 0) {
+            // If no classes, ensure markers are cleared
+            classMarkersRef.current.forEach(m => m.remove());
+            classMarkersRef.current = [];
+            return;
+        }
+
+        // Clear existing class markers
+        classMarkersRef.current.forEach(m => m.remove());
+        classMarkersRef.current = [];
+
+        const bounds = new mapboxgl.LngLatBounds();
+
+        parsedClasses.forEach((cls) => {
+            if (cls.building && cls.building.location) {
+                // Create custom element for the marker
+                const el = document.createElement('div');
+                el.className = 'class-marker';
+                el.innerHTML = `<div style="
+                    background-color: ${cls.building.color || '#3b82f6'};
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50%;
+                    border: 3px solid white;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 10px;
+                    font-weight: bold;
+                    color: white;
+                ">${cls.type === 'Section' ? 'S' : 'C'}</div>`;
+
+                // Popup content
+                const popupHTML = `
+                    <div class="p-2 min-w-[150px]">
+                        <div class="font-bold text-sm mb-1">${cls.course || 'Class'}</div>
+                        <div class="text-xs text-gray-600 mb-1">
+                            ${cls.building.name}<br/>
+                            Room ${cls.room}
+                        </div>
+                        ${cls.time ? `<div class="text-xs font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded inline-block">${cls.time}</div>` : ''}
+                        ${cls.type ? `<span class="ml-1 text-[10px] font-bold px-1 py-0.5 rounded uppercase tracking-wider border ${cls.type === 'Lecture' ? 'text-blue-600 border-blue-200' : 'text-purple-600 border-purple-200'}">${cls.type}</span>` : ''}
+                    </div>
+                `;
+
+                const popup = new mapboxgl.Popup({ offset: 25 })
+                    .setHTML(popupHTML);
+
+                const marker = new mapboxgl.Marker(el)
+                    .setLngLat([cls.building.location.lng, cls.building.location.lat])
+                    .setPopup(popup)
+                    .addTo(map.current!);
+
+                classMarkersRef.current.push(marker);
+                bounds.extend([cls.building.location.lng, cls.building.location.lat]);
+            }
+        });
+
+        // Fit map to show all markers
+        if (!bounds.isEmpty()) {
+            map.current.fitBounds(bounds, {
+                padding: { top: 100, bottom: 100, left: 100, right: 100 },
+                maxZoom: 17
+            });
+        }
+
+    }, [props.parsedClasses, isMapLoaded]);
 
     // Resolve initial building
     useEffect(() => {
@@ -53,6 +130,23 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
             }
         }
     }, [initialBuildingId, initialQuery]);
+
+    // Prompt for geolocation as soon as map component mounts (once per load)
+    useEffect(() => {
+        if (geoRequestedRef.current) return;
+        geoRequestedRef.current = true;
+        if (!navigator.geolocation) return;
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                setUserLocation([longitude, latitude]);
+            },
+            (error) => {
+                console.warn('Geolocation permission denied or unavailable', error);
+            }
+        );
+    }, []);
 
     useEffect(() => {
         if (map.current) return;

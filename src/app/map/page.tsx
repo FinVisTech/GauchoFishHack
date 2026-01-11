@@ -14,10 +14,21 @@ function MapContent() {
     const searchParams = useSearchParams();
     const query = searchParams.get('q');
     const buildingId = searchParams.get('b');
+    
+    // Parse "schedule" parameter if it exists (base64 JSON string)
+    const scheduleParam = searchParams.get('schedule');
+    let parsedClasses = [];
+    if (scheduleParam) {
+        try {
+            parsedClasses = JSON.parse(decodeURIComponent(scheduleParam));
+        } catch (e) {
+            console.error("Failed to parse schedule param", e);
+        }
+    }
 
     return (
         <div className="h-[100dvh] w-screen relative overflow-hidden">
-            <CampusMap initialQuery={query} initialBuildingId={buildingId} />
+            <CampusMap initialQuery={query} initialBuildingId={buildingId} parsedClasses={parsedClasses} />
         </div>
     );
 }

@@ -218,9 +218,9 @@ export default function LandingHero() {
                 {/* Text Layer */}
                 <h1
                     ref={textRef}
-                    className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white relative z-10"
+                    className="text-5xl md:text-7xl font-extrabold tracking-tight text-black relative z-10"
                 >
-                    Find your classroo
+                    <span className="text-black">Find your classroo</span>
                     <span
                         ref={mRef}
                         className="inline-block"
