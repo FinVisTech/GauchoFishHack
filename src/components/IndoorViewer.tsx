@@ -22,21 +22,43 @@ export default function IndoorViewer({ src, width, height, pathNodes = [], fullP
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
     const touchStartDistance = useRef<number>(0);
+    const touchStartScale = useRef<number>(1);
+    const touchCenter = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
     // Calculate initial scale based on container and image dimensions
     useEffect(() => {
-        if (!containerRef.current) return;
+        const calculateScale = () => {
+            if (!containerRef.current) return;
+            
+            const containerWidth = containerRef.current.clientWidth;
+            const containerHeight = containerRef.current.clientHeight;
+            
+            if (containerWidth === 0 || containerHeight === 0) return;
+            
+            // Detect mobile vs desktop - mobile needs much larger scale multiplier
+            const isMobile = window.innerWidth < 768; // md breakpoint
+            const scaleFactor = isMobile ? 10 : 0.98; // 10x for mobile, 98% for desktop
+            
+            // Calculate scale to fill container
+            const scaleX = (containerWidth * scaleFactor) / width;
+            const scaleY = (containerHeight * scaleFactor) / height;
+            const calculatedScale = Math.min(scaleX, scaleY);
+            
+            setScale(calculatedScale);
+            console.log(`📐 ${isMobile ? 'Mobile' : 'Desktop'} scale: ${calculatedScale.toFixed(2)} (image: ${width}x${height}, container: ${containerWidth}x${containerHeight})`);
+        };
+
+        // Calculate on mount and when window resizes
+        calculateScale();
+        window.addEventListener('resize', calculateScale);
         
-        const containerWidth = containerRef.current.clientWidth;
-        const containerHeight = containerRef.current.clientHeight;
+        // Use timeout to recalculate after layout settles
+        const timer = setTimeout(calculateScale, 100);
         
-        // Calculate scale to fit image in container with padding
-        const scaleX = (containerWidth * 0.9) / width;  // 90% of container width
-        const scaleY = (containerHeight * 0.9) / height; // 90% of container height
-        const calculatedScale = Math.min(scaleX, scaleY, 1); // Don't exceed 1x
-        
-        setScale(calculatedScale);
-        console.log(`📐 Calculated initial scale: ${calculatedScale.toFixed(2)} (image: ${width}x${height}, container: ${containerWidth}x${containerHeight})`);
+        return () => {
+            window.removeEventListener('resize', calculateScale);
+            clearTimeout(timer);
+        };
     }, [width, height]);
 
     // Debug logging
@@ -57,44 +79,74 @@ export default function IndoorViewer({ src, width, height, pathNodes = [], fullP
         console.log('🖼️  Loading image from:', src);
     }, [src]);
 
-    // Mouse/Touch drag handlers
+    // Mouse/Touch drag handlers - only for mouse on desktop
     const handlePointerDown = (e: React.PointerEvent) => {
+        if (e.pointerType === 'touch') return; // Let touch events handle it
         setIsDragging(true);
         setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
     };
 
     const handlePointerMove = (e: React.PointerEvent) => {
-        if (!isDragging) return;
+        if (e.pointerType === 'touch' || !isDragging) return;
         setPosition({
             x: e.clientX - dragStart.x,
             y: e.clientY - dragStart.y
         });
     };
 
-    const handlePointerUp = () => setIsDragging(false);
+    const handlePointerUp = (e: React.PointerEvent) => {
+        if (e.pointerType === 'touch') return;
+        setIsDragging(false);
+    };
 
-    // Touch pinch-to-zoom
+    // Touch pinch-to-zoom with center point calculation
     const handleTouchStart = (e: React.TouchEvent) => {
-        if (e.touches.length === 2) {
+        if (e.touches.length === 1) {
+            // Single finger drag
+            setIsDragging(true);
+            setDragStart({ x: e.touches[0].clientX - position.x, y: e.touches[0].clientY - position.y });
+        } else if (e.touches.length === 2) {
+            // Two finger pinch
+            setIsDragging(false);
             const dx = e.touches[0].clientX - e.touches[1].clientX;
             const dy = e.touches[0].clientY - e.touches[1].clientY;
             touchStartDistance.current = Math.sqrt(dx * dx + dy * dy);
+            touchStartScale.current = scale;
+            
+            // Calculate center point between fingers
+            touchCenter.current = {
+                x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+            };
         }
     };
 
     const handleTouchMove = (e: React.TouchEvent) => {
-        if (e.touches.length === 2 && touchStartDistance.current > 0) {
+        e.preventDefault(); // Prevent page scroll/zoom
+        
+        if (e.touches.length === 1 && isDragging) {
+            // Single finger drag
+            setPosition({
+                x: e.touches[0].clientX - dragStart.x,
+                y: e.touches[0].clientY - dragStart.y
+            });
+        } else if (e.touches.length === 2 && touchStartDistance.current > 0) {
+            // Two finger pinch-to-zoom
             const dx = e.touches[0].clientX - e.touches[1].clientX;
             const dy = e.touches[0].clientY - e.touches[1].clientY;
             const currentDistance = Math.sqrt(dx * dx + dy * dy);
-            const pinchDelta = (currentDistance - touchStartDistance.current) * 0.01;
-            setScale(s => Math.min(Math.max(0.1, s + pinchDelta), 4));
-            touchStartDistance.current = currentDistance;
+            
+            // Calculate new scale
+            const scaleChange = currentDistance / touchStartDistance.current;
+            const newScale = Math.min(Math.max(0.1, touchStartScale.current * scaleChange), 4);
+            
+            setScale(newScale);
         }
     };
 
     const handleTouchEnd = () => {
         touchStartDistance.current = 0;
+        setIsDragging(false);
     };
 
     const handleWheel = (e: React.WheelEvent) => {
@@ -116,9 +168,11 @@ export default function IndoorViewer({ src, width, height, pathNodes = [], fullP
                     if (!containerRef.current) return;
                     const containerWidth = containerRef.current.clientWidth;
                     const containerHeight = containerRef.current.clientHeight;
-                    const scaleX = (containerWidth * 0.9) / width;
-                    const scaleY = (containerHeight * 0.9) / height;
-                    setScale(Math.min(scaleX, scaleY, 1));
+                    const isMobile = window.innerWidth < 768;
+                    const scaleFactor = isMobile ? 10 : 0.98;
+                    const scaleX = (containerWidth * scaleFactor) / width;
+                    const scaleY = (containerHeight * scaleFactor) / height;
+                    setScale(Math.min(scaleX, scaleY));
                     setPosition({ x: 0, y: 0 }); 
                 }} className="p-3 md:p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition" title="Reset view"><Maximize className="h-5 md:h-4 w-5 md:w-4" /></button>
             </div>
@@ -137,7 +191,8 @@ export default function IndoorViewer({ src, width, height, pathNodes = [], fullP
 
             <div
                 ref={containerRef}
-                className="w-full h-full cursor-grab active:cursor-grabbing flex items-center justify-center touch-none"
+                className="w-full h-full cursor-grab active:cursor-grabbing flex items-center justify-center"
+                style={{ touchAction: 'none' }}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
@@ -150,6 +205,7 @@ export default function IndoorViewer({ src, width, height, pathNodes = [], fullP
                 <div
                     style={{
                         transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                        transformOrigin: 'center center',
                         transition: isDragging ? 'none' : 'transform 0.1s ease-out',
                         width: width,
                         height: height,
@@ -283,4 +339,4 @@ export default function IndoorViewer({ src, width, height, pathNodes = [], fullP
             </div>
         </div>
     );
-}
+};
