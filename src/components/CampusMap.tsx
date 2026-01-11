@@ -22,6 +22,7 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<mapboxgl.Map | null>(null);
     const directionsRef = useRef<any>(null);
+    const geolocateRef = useRef<mapboxgl.GeolocateControl | null>(null);
     const markersRef = useRef<mapboxgl.Marker[]>([]);
     const [tokenError, setTokenError] = useState(false);
     const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
@@ -33,6 +34,7 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
     const [hasSearched, setHasSearched] = useState(false);
     const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
     const [isSearching, setIsSearching] = useState(false);
+    const [isNavigating, setIsNavigating] = useState(false);
     const router = useRouter();
 
     // Resolve initial building
@@ -73,6 +75,11 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
             attributionControl: false,
         });
 
+        // Expose map to window immediately for debugging/coordinate extraction
+        // @ts-ignore
+        window.campusMap = map.current;
+        console.log('Mapbox instance exposed as window.campusMap');
+
         // Initialize Directions Plugin
         // controls.inputs: false hides the A/B box as requested
         const directions = new MapboxDirections({
@@ -82,7 +89,7 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
             interactive: false,
             controls: {
                 inputs: false,
-                instructions: true,
+                instructions: false,
                 profileSwitcher: false
             }
         });
@@ -92,10 +99,32 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
         map.current.addControl(directions as any, 'top-left');
         directionsRef.current = directions;
 
+        // Initialize GeolocateControl for "Blue Dot" with heading
+        const geolocate = new mapboxgl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true
+            },
+            trackUserLocation: true,
+            showUserHeading: true,
+            showAccuracyCircle: true,
+        });
+
+        // Add control to map (we'll hide the default button via CSS)
+        map.current.addControl(geolocate);
+        geolocateRef.current = geolocate;
+
+        // Sync user location state when geolocate updates
+        geolocate.on('geolocate', (e) => {
+            const { longitude, latitude } = e.coords;
+            setUserLocation([longitude, latitude]);
+        });
+
         // Default GeolocateControl removed in favor of custom button
 
         map.current.on('load', () => {
             setIsMapLoaded(true);
+            // @ts-ignore
+            window.campusMapLoaded = true;
 
             // Add markers (hidden by default)
             getBuildings().forEach(building => {
@@ -126,9 +155,14 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
         });
 
         map.current.on('click', () => {
-            setSelectedBuilding(null);
-            // Optional: Clear directions?
-            // if (directionsRef.current) directionsRef.current.removeRoutes();
+            // Only clear selection if we are NOT navigating, OR if the user wants to close the popup.
+            // If navigating, we might want to keep the route but just close popup? 
+            // The prompt says: "change the button to a 'Cancel Route' button where if the users presses cancel navigation it cancels the route they just started and closes that little pop up window as a whole"
+            // So if they click away, standardized behavior is usually just close popup. 
+            // We'll leave this as is: it clears selectedBuilding. The navigation state persists until they hit cancel or new route.
+            if (selectedBuilding) {
+                setSelectedBuilding(null);
+            }
         });
 
     }, []);
@@ -162,35 +196,9 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
     }, [isMapLoaded, selectedBuilding, flyToBuilding]);
 
     const handleCustomGeolocate = () => {
-        if (!navigator.geolocation) {
-            alert('Geolocation is not supported by your browser');
-            return;
+        if (geolocateRef.current) {
+            geolocateRef.current.trigger();
         }
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                // Fly to user location
-                if (map.current) {
-                    map.current.flyTo({
-                        center: [longitude, latitude],
-                        zoom: 17,
-                        essential: true
-                    });
-
-                    // Add a blue marker for the user
-                    new mapboxgl.Marker({ color: '#3b82f6' })
-                        .setLngLat([longitude, latitude])
-                        .addTo(map.current);
-                }
-
-                setUserLocation([longitude, latitude]);
-            },
-            (error) => {
-                console.error('Unable to retrieve your location', error);
-                alert('Unable to retrieve your location. Please check your browser permissions.');
-            }
-        );
     };
 
     const handleSearchSubmit = async (e: React.FormEvent) => {
@@ -295,11 +303,23 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
 
         if (userLocation) {
             directionsRef.current.setOrigin(userLocation);
+            directionsRef.current.setDestination([selectedBuilding.location.lng, selectedBuilding.location.lat]);
+            setIsNavigating(true);
         } else {
             alert("Please enable location services or click the 'Find My Location' arrow first.");
         }
+    };
 
-        directionsRef.current.setDestination([selectedBuilding.location.lng, selectedBuilding.location.lat]);
+    const handleCancelRoute = () => {
+        if (directionsRef.current) {
+            directionsRef.current.removeRoutes();
+            // Also need to clear origin/destination to fully reset visual state if possible,
+            // but removeRoutes() is usually sufficient for visual.
+            // setOrigin(null) might be needed if the plugin holds state.
+            // The mapbox-gl-directions API is limited in types here, usually removeRoutes clears the line.
+        }
+        setIsNavigating(false);
+        setSelectedBuilding(null); // Close the popup
     };
 
     if (tokenError) {
@@ -442,7 +462,7 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
             {/* Custom Bottom Right Location Button */}
             <button
                 onClick={handleCustomGeolocate}
-                className="absolute bottom-6 right-4 sm:bottom-6 sm:right-6 z-20 w-9 h-9 sm:w-12 sm:h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-colors group"
+                className="absolute bottom-24 left-4 sm:bottom-6 sm:left-6 z-20 w-9 h-9 sm:w-12 sm:h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-colors group"
                 title="Find My Location"
             >
                 <MapPin
@@ -514,17 +534,18 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
                 </div>
             )}
 
+
             {/* Building Card */}
             {selectedBuilding && (
-                <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-5 z-20 animate-in slide-in-from-bottom-10 fade-in duration-300">
+                <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 bg-white rounded-2xl shadow-xl p-5 z-20 animate-in slide-in-from-bottom-10 fade-in duration-300">
                     <div className="flex justify-between items-start mb-2">
                         <div>
-                            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{selectedBuilding.name}</h2>
+                            <h2 className="text-xl font-bold text-slate-900">{selectedBuilding.name}</h2>
                             <p className="text-sm text-slate-500 font-mono">
                                 {selectedBuilding.id === 'MAPBOX_RESULT' ? 'Map Location' : selectedBuilding.id}
                             </p>
                         </div>
-                        <button onClick={() => setSelectedBuilding(null)} className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <button onClick={() => setSelectedBuilding(null)} className="p-1 rounded-full hover:bg-slate-100">
                             <X className="h-5 w-5 text-slate-400" />
                         </button>
                     </div>
@@ -540,16 +561,33 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
                             </button>
                         )}
 
-                        <button
-                            onClick={handleGetDirections}
-                            className="w-full h-11 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium rounded-xl flex items-center justify-center gap-2 transition-colors"
-                        >
-                            <Navigation className="h-5 w-5" />
-                            Directions (Walk)
-                        </button>
+                        {isNavigating ? (
+                            <button
+                                onClick={handleCancelRoute}
+                                className="w-full h-11 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-colors"
+                            >
+                                <X className="h-5 w-5" />
+                                Cancel Route
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleGetDirections}
+                                className="w-full h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl flex items-center justify-center gap-2 transition-colors"
+                            >
+                                <Navigation className="h-5 w-5" />
+                                Directions (Walk)
+                            </button>
+                        )}
                     </div>
                 </div>
             )}
+
+            {/* Hide the default Mapbox Geolocate Button */}
+            <style jsx global>{`
+                .mapboxgl-ctrl-geolocate {
+                    display: none !important;
+                }
+            `}</style>
         </div>
     );
 }

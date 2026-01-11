@@ -18,3 +18,8 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Hide Mapbox Logo */
+.mapboxgl-ctrl-logo {
+  display: none !important;
+}

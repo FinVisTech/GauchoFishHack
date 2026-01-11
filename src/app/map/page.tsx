@@ -16,7 +16,7 @@ function MapContent() {
     const buildingId = searchParams.get('b');
 
     return (
-        <div className="h-screen w-screen relative overflow-hidden">
+        <div className="h-[100dvh] w-screen relative overflow-hidden">
             <CampusMap initialQuery={query} initialBuildingId={buildingId} />
         </div>
     );

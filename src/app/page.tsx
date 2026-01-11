@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, MapPin, Calendar, Clock, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import LandingHero from '@/components/LandingHero';
 
 export default function Home() {
   const router = useRouter();
@@ -38,14 +39,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-950">
       <div className="w-full max-w-md space-y-8">
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Find My <span className="text-blue-600">Classroom</span>
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400">
-            UCSB Indoor Navigation & Floorplans
-          </p>
-        </div>
+        <LandingHero />
 
         <form onSubmit={handleSearch} className="space-y-4">
           <div className="relative">
