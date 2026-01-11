@@ -155,8 +155,8 @@ export default function BuildingClient({ building, floors, targetRoom }: Buildin
                     </div>
                 </div>
 
-                {/* Floor Switcher (Mobile/Desktop) */}
-                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg overflow-x-auto max-w-[200px] scrollbar-hide">
+                {/* Floor Switcher (Center, Dynamic Size) */}
+                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
                     {floors.map(f => (
                         <button
                             key={f.floor}
@@ -175,29 +175,6 @@ export default function BuildingClient({ building, floors, targetRoom }: Buildin
             {/* Main Content */}
             <div className="flex-1 relative overflow-hidden flex flex-col md:flex-row">
 
-                {/* Sidebar (Desktop) / Bottom Sheet (Mobile) - MVP simplified to sidebar on large, overlay on small? 
-            For now, just a Floating Search on top of map.
-        */}
-                <div className="absolute top-4 left-4 z-20 w-64 hidden md:block space-y-2">
-                    <div className="bg-white dark:bg-slate-900 shadow-lg rounded-xl p-3 border border-slate-200 dark:border-slate-800">
-                        <label className="text-xs font-semibold text-slate-500 uppercase mb-1 block">Find Room</label>
-                        <div className="relative">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
-                            <input
-                                value={roomQuery}
-                                onChange={e => setRoomQuery(e.target.value)}
-                                placeholder="e.g. 2304"
-                                className="w-full pl-8 pr-2 py-2 bg-slate-50 dark:bg-slate-800 rounded border-none text-sm focus:ring-1 focus:ring-blue-500"
-                            />
-                        </div>
-                        {roomQuery && (
-                            <div className="mt-2 text-xs text-orange-600 bg-orange-50 p-2 rounded">
-                                Targeting rooms is coming soon. Look for {roomQuery} on the floorplan.
-                            </div>
-                        )}
-                    </div>
-                </div>
-
                 {/* Viewer */}
                 <div className="flex-1 bg-slate-50 dark:bg-slate-950 relative">
                     {currentFloorData ? (
@@ -215,9 +192,9 @@ export default function BuildingClient({ building, floors, targetRoom }: Buildin
                         </div>
                     )}
 
-                    {/* Room picker dropdown (right side) */}
+                    {/* Room picker dropdown (left side) */}
                     {!targetRoom && availableRooms.length > 0 && (
-                        <div className="absolute top-4 right-4 z-20 w-64">
+                        <div className="absolute top-4 left-4 z-20 w-64">
                             <div className="bg-white dark:bg-slate-900 shadow-lg rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                                 {/* Dropdown header */}
                                 <button
