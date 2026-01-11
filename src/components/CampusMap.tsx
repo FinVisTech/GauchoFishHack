@@ -88,7 +88,8 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
         });
 
 
-        map.current.addControl(directions, 'top-left');
+
+        map.current.addControl(directions as any, 'top-left');
         directionsRef.current = directions;
 
         // NavigationControl removed as requested (was behind profile button)
