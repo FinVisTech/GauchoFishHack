@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
+import MapboxDirections from '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions';
+import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
 import { useRouter } from 'next/navigation';
-import { Search, Navigation, Map as MapIcon, X, User, Plus, Calendar } from 'lucide-react';
+import { Search, Navigation, Map as MapIcon, X, User, Plus, Calendar, ArrowLeft, Menu } from 'lucide-react';
 import { getBuildings, resolveBuilding, type Building } from '@/lib/data';
 
 interface CampusMapProps {
@@ -13,10 +15,13 @@ interface CampusMapProps {
 
 const UCSB_CENTER = [-119.845, 34.414];
 const INITIAL_ZOOM = 15;
+// Bounding box for UCSB/Goleta area to improve search relevance
+const UCSB_BBOX = [-119.90, 34.40, -119.80, 34.45];
 
 export default function CampusMap({ initialQuery, initialBuildingId }: CampusMapProps) {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<mapboxgl.Map | null>(null);
+    const directionsRef = useRef<any>(null);
     const markersRef = useRef<mapboxgl.Marker[]>([]);
     const [tokenError, setTokenError] = useState(false);
     const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
@@ -26,6 +31,8 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
     const [showScheduleModal, setShowScheduleModal] = useState(false);
     const [scheduleText, setScheduleText] = useState('');
     const [hasSearched, setHasSearched] = useState(false);
+    const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+    const [isSearching, setIsSearching] = useState(false);
     const router = useRouter();
 
     // Resolve initial building
@@ -66,11 +73,40 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
             attributionControl: false,
         });
 
-        map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-        map.current.addControl(new mapboxgl.GeolocateControl({
+        // Initialize Directions Plugin
+        // controls.inputs: false hides the A/B box as requested
+        const directions = new MapboxDirections({
+            accessToken: mapboxgl.accessToken,
+            unit: 'imperial',
+            profile: 'mapbox/walking',
+            interactive: false,
+            controls: {
+                inputs: false,
+                instructions: true,
+                profileSwitcher: false
+            }
+        });
+
+
+        map.current.addControl(directions, 'top-left');
+        directionsRef.current = directions;
+
+        // NavigationControl removed as requested (was behind profile button)
+
+        const geolocateControl = new mapboxgl.GeolocateControl({
             positionOptions: { enableHighAccuracy: true },
-            trackUserLocation: true
-        }));
+            trackUserLocation: true,
+            showUserHeading: true
+        });
+
+        geolocateControl.on('geolocate', (e) => {
+            const accuracy = Math.round(e.coords.accuracy);
+            console.log('Geolocation accuracy:', accuracy, 'meters');
+            setUserLocation([e.coords.longitude, e.coords.latitude]);
+        });
+
+        // Moved to bottom-right to avoid overlapping with top-right profile button
+        map.current.addControl(geolocateControl, 'bottom-right');
 
         map.current.on('load', () => {
             setIsMapLoaded(true);
@@ -91,7 +127,7 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
                 el.addEventListener('click', (e) => {
                     e.stopPropagation();
                     setSelectedBuilding(building);
-                    flyToBuilding(building);
+                    flyToBuilding(building.location);
                 });
 
                 if (map.current) {
@@ -105,6 +141,8 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
 
         map.current.on('click', () => {
             setSelectedBuilding(null);
+            // Optional: Clear directions?
+            // if (directionsRef.current) directionsRef.current.removeRoutes();
         });
 
     }, []);
@@ -121,10 +159,10 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
         });
     }, [hasSearched]);
 
-    const flyToBuilding = useCallback((building: Building) => {
+    const flyToBuilding = useCallback((location: { lat: number, lng: number }) => {
         if (map.current && isMapLoaded) {
             map.current.flyTo({
-                center: [building.location.lng, building.location.lat],
+                center: [location.lng, location.lat],
                 zoom: 17,
                 essential: true
             });
@@ -133,21 +171,88 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
 
     useEffect(() => {
         if (isMapLoaded && selectedBuilding) {
-            flyToBuilding(selectedBuilding);
+            flyToBuilding(selectedBuilding.location);
         }
     }, [isMapLoaded, selectedBuilding, flyToBuilding]);
 
-    const handleSearchSubmit = (e: React.FormEvent) => {
+    const handleSearchSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!searchQuery.trim()) return;
 
         setHasSearched(true);
-        const result = resolveBuilding(searchQuery);
-        if (result) {
-            setSelectedBuilding(result);
-            flyToBuilding(result);
-        } else {
-            alert('Building not found within the demo dataset (Only Library, ILP, Phelps, NH, HFH)');
+        setIsSearching(true);
+        setSelectedBuilding(null);
+
+        // 1. Try Local Resolution first
+        const localResult = resolveBuilding(searchQuery);
+        if (localResult) {
+            setSelectedBuilding(localResult);
+            flyToBuilding(localResult.location);
+            setIsSearching(false);
+            return;
+        }
+
+        // 2. Fallback to Mapbox Geocoding API
+        try {
+            const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+            if (!token) throw new Error('No token');
+
+            // Bias the search by appending "UCSB" or using proximity more aggressively
+            const enhancedQuery = `${searchQuery} UCSB`;
+            const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(enhancedQuery)}.json`;
+            const params = new URLSearchParams({
+                access_token: token,
+                bbox: UCSB_BBOX.join(','), // Bias to UCSB
+                proximity: `${UCSB_CENTER[0]},${UCSB_CENTER[1]}`, // Bias to center
+                limit: '1'
+            });
+
+            const res = await fetch(`${endpoint}?${params}`);
+            const data = await res.json();
+
+            if (data.features && data.features.length > 0) {
+                const feature = data.features[0];
+                const [lng, lat] = feature.center;
+
+                // Create a temporary building object for the result
+                const tempBuilding: Building = {
+                    id: 'MAPBOX_RESULT',
+                    name: feature.text, // e.g. "Old Gym"
+                    abbr: [feature.text],
+                    location: { lat, lng },
+                    color: '#64748b' // Slate-500 generic color
+                };
+
+                setSelectedBuilding(tempBuilding);
+                flyToBuilding({ lat, lng });
+            } else {
+                // If "Old Gym UCSB" fails, try raw query as last resort
+                if (searchQuery !== enhancedQuery) {
+                    const rawEndpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json`;
+                    const rawRes = await fetch(`${rawEndpoint}?${params}`);
+                    const rawData = await rawRes.json();
+                    if (rawData.features && rawData.features.length > 0) {
+                        const feature = rawData.features[0];
+                        const [lng, lat] = feature.center;
+                        const tempBuilding: Building = {
+                            id: 'MAPBOX_RESULT',
+                            name: feature.text,
+                            abbr: [feature.text],
+                            location: { lat, lng },
+                            color: '#64748b'
+                        };
+                        setSelectedBuilding(tempBuilding);
+                        flyToBuilding({ lat, lng });
+                        return;
+                    }
+                }
+                alert('No results found for that location.');
+            }
+        } catch (error) {
+            console.error('Search error:', error);
+            alert('Error searching for location.');
+        } finally {
+            setIsSearching(false);
         }
     };
 
@@ -162,9 +267,21 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
                 setScheduleText('');
                 setHasSearched(true);
                 setSelectedBuilding(building);
-                flyToBuilding(building);
+                flyToBuilding(building.location);
             }
         }
+    };
+
+    const handleGetDirections = () => {
+        if (!selectedBuilding || !directionsRef.current) return;
+
+        if (userLocation) {
+            directionsRef.current.setOrigin(userLocation);
+        } else {
+            alert("Please enable location services or click the 'Find My Location' arrow first.");
+        }
+
+        directionsRef.current.setDestination([selectedBuilding.location.lng, selectedBuilding.location.lat]);
     };
 
     if (tokenError) {
@@ -184,22 +301,34 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
         <div className="relative h-full w-full bg-slate-200">
             <div ref={mapContainer} className="h-full w-full" />
 
-            {/* Top Left - Add Schedule Button */}
-            <button
-                onClick={() => setShowScheduleModal(true)}
-                className="absolute top-4 left-4 z-10 w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-colors"
-            >
-                <Plus className="h-6 w-6 text-slate-700" />
-            </button>
+            {/* Top Left Controls Group */}
+            <div className="absolute top-4 left-4 z-10 flex flex-col gap-3 sm:flex-row">
+                {/* Back Button */}
+                <button
+                    onClick={() => router.push('/')}
+                    className="w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+                >
+                    <ArrowLeft className="h-6 w-6 text-slate-500" strokeWidth={1.8} />
+                </button>
 
-            {/* Top Search Bar */}
-            <div className="absolute top-4 left-20 right-20 sm:left-20 sm:right-20 md:left-1/2 md:-translate-x-1/2 md:w-96 z-10">
+                {/* Add Schedule Button */}
+                <button
+                    onClick={() => setShowScheduleModal(true)}
+                    className="w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+                >
+                    <Plus className="h-6 w-6 text-slate-500" strokeWidth={1.8} />
+                </button>
+            </div>
+
+            {/* Top Search Bar - Adjusted margins for new buttons */}
+            <div className="absolute top-4 left-4 right-4 sm:left-32 sm:right-20 md:left-1/2 md:-translate-x-1/2 md:w-96 z-10 mt-16 sm:mt-0">
                 <form onSubmit={handleSearchSubmit} className="relative shadow-lg rounded-xl">
                     <input
                         className="w-full h-12 pl-12 pr-4 rounded-xl border-none outline-none bg-white/90 backdrop-blur-sm text-slate-800 focus:ring-2 focus:ring-blue-500"
                         placeholder="Search buildings..."
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
+                        disabled={isSearching}
                     />
                     <Search className="absolute left-4 top-3.5 h-5 w-5 text-slate-500" />
                     {searchQuery && (
@@ -214,13 +343,24 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
                 </form>
             </div>
 
-            {/* Top Right - Account Button */}
-            <button
-                onClick={() => setShowAccountModal(true)}
-                className="absolute top-4 right-4 z-10 w-12 h-12 bg-slate-300/90 backdrop-blur-sm hover:bg-slate-300 rounded-full shadow-lg flex items-center justify-center transition-colors"
-            >
-                <User className="h-6 w-6 text-slate-500" />
-            </button>
+            {/* Top Right Controls Group */}
+            <div className="absolute top-4 right-4 z-10 flex flex-col gap-3 sm:flex-row">
+                {/* Account Button */}
+                <button
+                    onClick={() => setShowAccountModal(true)}
+                    className="w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+                >
+                    <User className="h-6 w-6 text-slate-500" strokeWidth={1.8} />
+                </button>
+
+                {/* Menu Button */}
+                <button
+                    onClick={() => {/* Menu action placeholder */ }}
+                    className="w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+                >
+                    <Menu className="h-6 w-6 text-slate-500" strokeWidth={1.8} />
+                </button>
+            </div>
 
             {/* Account Modal */}
             {showAccountModal && (
@@ -291,7 +431,9 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
                     <div className="flex justify-between items-start mb-2">
                         <div>
                             <h2 className="text-xl font-bold text-slate-900 dark:text-white">{selectedBuilding.name}</h2>
-                            <p className="text-sm text-slate-500 font-mono">{selectedBuilding.id}</p>
+                            <p className="text-sm text-slate-500 font-mono">
+                                {selectedBuilding.id === 'MAPBOX_RESULT' ? 'Map Location' : selectedBuilding.id}
+                            </p>
                         </div>
                         <button onClick={() => setSelectedBuilding(null)} className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
                             <X className="h-5 w-5 text-slate-400" />
@@ -299,23 +441,23 @@ export default function CampusMap({ initialQuery, initialBuildingId }: CampusMap
                     </div>
 
                     <div className="space-y-3 mt-4">
-                        <button
-                            onClick={() => router.push(`/building/${selectedBuilding.id}`)}
-                            className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-colors"
-                        >
-                            <MapIcon className="h-5 w-5" />
-                            Open Indoor Map
-                        </button>
+                        {selectedBuilding.id !== 'MAPBOX_RESULT' && (
+                            <button
+                                onClick={() => router.push(`/building/${selectedBuilding.id}`)}
+                                className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-colors"
+                            >
+                                <MapIcon className="h-5 w-5" />
+                                Open Indoor Map
+                            </button>
+                        )}
 
-                        <a
-                            href={`https://www.google.com/maps/dir/?api=1&destination=${selectedBuilding.location.lat},${selectedBuilding.location.lng}`}
-                            target="_blank"
-                            rel="noreferrer"
+                        <button
+                            onClick={handleGetDirections}
                             className="w-full h-11 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium rounded-xl flex items-center justify-center gap-2 transition-colors"
                         >
                             <Navigation className="h-5 w-5" />
-                            Directions
-                        </a>
+                            Directions (Walk)
+                        </button>
                     </div>
                 </div>
             )}

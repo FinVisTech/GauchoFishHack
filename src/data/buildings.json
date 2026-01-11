@@ -4,7 +4,9 @@
         "name": "UCSB Library",
         "abbr": [
             "LIB",
-            "LIBR"
+            "LIBR",
+            "DAVIDSON",
+            "DAVIDSON LIBRARY"
         ],
         "location": {
             "lat": 34.4135,
@@ -63,5 +65,195 @@
             "lng": -119.8422
         },
         "color": "#ef4444"
+    },
+    {
+        "id": "old-gym",
+        "name": "Old Gymnasium (Red Barn)",
+        "abbr": [
+            "OLD GYM",
+            "RED BARN",
+            "GYM"
+        ],
+        "location": {
+            "lat": 34.414558,
+            "lng": -119.848198
+        },
+        "color": "#eab308"
+    },
+    {
+        "id": "robertson-gym",
+        "name": "Robertson Gymnasium",
+        "abbr": [
+            "ROB GYM",
+            "ROBERTSON"
+        ],
+        "location": {
+            "lat": 34.4150,
+            "lng": -119.8470
+        },
+        "color": "#f59e0b"
+    },
+    {
+        "id": "rec-cen",
+        "name": "Recreation Center",
+        "abbr": [
+            "REC CEN",
+            "REC CENTER",
+            "RECREATION CENTER"
+        ],
+        "location": {
+            "lat": 34.418026,
+            "lng": -119.848709
+        },
+        "color": "#06b6d4"
+    },
+    {
+        "id": "university-center",
+        "name": "University Center (UCen)",
+        "abbr": [
+            "UCEN",
+            "UNIVERSITY CENTER"
+        ],
+        "location": {
+            "lat": 34.4120,
+            "lng": -119.8475
+        },
+        "color": "#8b5cf6"
+    },
+    {
+        "id": "kerr-hall",
+        "name": "Kerr Hall",
+        "abbr": [
+            "KERR"
+        ],
+        "location": {
+            "lat": 34.4146,
+            "lng": -119.8468
+        },
+        "color": "#ef4444"
+    },
+    {
+        "id": "srb",
+        "name": "Student Resource Building",
+        "abbr": [
+            "SRB"
+        ],
+        "location": {
+            "lat": 34.4116,
+            "lng": -119.8479
+        },
+        "color": "#f97316"
+    },
+    {
+        "id": "arts-library",
+        "name": "Arts Library",
+        "abbr": [
+            "ARTS LIB",
+            "ARTS LIBRARY"
+        ],
+        "location": {
+            "lat": 34.4132,
+            "lng": -119.8452
+        },
+        "color": "#3b82f6"
+    },
+    {
+        "id": "anacapa-hall",
+        "name": "Anacapa Hall",
+        "abbr": [
+            "ANACAPA"
+        ],
+        "location": {
+            "lat": 34.4107,
+            "lng": -119.8440
+        },
+        "color": "#8b5cf6"
+    },
+    {
+        "id": "santa-cruz-hall",
+        "name": "Santa Cruz Hall",
+        "abbr": [
+            "SANTA CRUZ"
+        ],
+        "location": {
+            "lat": 34.4105,
+            "lng": -119.8427
+        },
+        "color": "#8b5cf6"
+    },
+    {
+        "id": "santa-rosa-hall",
+        "name": "Santa Rosa Hall",
+        "abbr": [
+            "SANTA ROSA"
+        ],
+        "location": {
+            "lat": 34.4100,
+            "lng": -119.8436
+        },
+        "color": "#8b5cf6"
+    },
+    {
+        "id": "san-miguel-hall",
+        "name": "San Miguel Hall",
+        "abbr": [
+            "SAN MIGUEL"
+        ],
+        "location": {
+            "lat": 34.4095,
+            "lng": -119.8453
+        },
+        "color": "#8b5cf6"
+    },
+    {
+        "id": "san-nicolas-hall",
+        "name": "San Nicolas Hall",
+        "abbr": [
+            "SAN NICOLAS"
+        ],
+        "location": {
+            "lat": 34.4104,
+            "lng": -119.8448
+        },
+        "color": "#8b5cf6"
+    },
+    {
+        "id": "san-rafael-hall",
+        "name": "San Rafael Hall",
+        "abbr": [
+            "SAN RAFAEL"
+        ],
+        "location": {
+            "lat": 34.4094,
+            "lng": -119.8517
+        },
+        "color": "#8b5cf6"
+    },
+    {
+        "id": "manzanita-village",
+        "name": "Manzanita Village",
+        "abbr": [
+            "MANZANITA",
+            "MANZ"
+        ],
+        "location": {
+            "lat": 34.4087,
+            "lng": -119.8525
+        },
+        "color": "#8b5cf6"
+    },
+    {
+        "id": "santa-catalina",
+        "name": "Santa Catalina (FT)",
+        "abbr": [
+            "SANTA CATALINA",
+            "FT",
+            "PORTOLA"
+        ],
+        "location": {
+            "lat": 34.4151,
+            "lng": -119.8600
+        },
+        "color": "#8b5cf6"
     }
 ]

@@ -10,12 +10,14 @@
     "floorplans": "ts-node scripts/unpackFloorplans.ts"
   },
   "dependencies": {
+    "@mapbox/mapbox-gl-directions": "^4.3.1",
     "adm-zip": "^0.5.16",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
     "mapbox-gl": "^3.17.0",
     "next": "16.1.1",
+    "node-fetch": "^3.3.2",
     "pngjs": "^7.0.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
