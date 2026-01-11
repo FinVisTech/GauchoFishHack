@@ -150,8 +150,8 @@ export default function BuildingClient({ building, floors, targetRoom }: Buildin
                         <ArrowLeft className="h-5 w-5" />
                     </Link>
                     <div>
-                        <h1 className="font-bold text-lg leading-tight">{building.name}</h1>
-                        <p className="text-xs text-slate-500">Floor {currentFloor}</p>
+                        <h1 className="font-bold text-lg leading-tight text-white">{building.name}</h1>
+                        <p className="text-xs text-white/70">Floor {currentFloor}</p>
                     </div>
                 </div>
 
