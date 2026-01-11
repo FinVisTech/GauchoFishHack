@@ -1,6 +1,9 @@
 {
   "ucsb-library": {
     "sourceZip": "Library.zip",
+    "graphNodes": "ucsb-library/nodes.json",
+    "graphEdges": "ucsb-library/edges.json",
+    "entrances": "ucsb-library/entrances.json",
     "floors": {
       "1": {
         "path": "/floorplans/ucsb-library/1.png",

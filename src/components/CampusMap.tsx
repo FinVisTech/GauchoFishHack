@@ -38,6 +38,7 @@ export default function CampusMap(props: CampusMapProps) {
     const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
     const [isSearching, setIsSearching] = useState(false);
     const [isNavigating, setIsNavigating] = useState(false);
+    const [targetRoom, setTargetRoom] = useState<number | null>(null);
     const [pendingBuilding, setPendingBuilding] = useState<Building | null>(null);
     const [showReRouteModal, setShowReRouteModal] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
@@ -373,16 +374,35 @@ export default function CampusMap(props: CampusMapProps) {
             }
         }
 
-        // 2. Try Local Resolution
+        // 2. Check for building + room number pattern (e.g., "UCSB Library 2042")
+        const buildingRoomRegex = /^(.+?)\s+(\d{3,4})$/;
+        const buildingRoomMatch = searchQuery.trim().match(buildingRoomRegex);
+
+        if (buildingRoomMatch) {
+            const buildingPart = buildingRoomMatch[1];
+            const roomNumber = parseInt(buildingRoomMatch[2]);
+
+            const localResult = resolveBuilding(buildingPart);
+            if (localResult) {
+                setSelectedBuilding(localResult);
+                setTargetRoom(roomNumber);
+                flyToBuilding(localResult.location);
+                setIsSearching(false);
+                return;
+            }
+        }
+
+        // 3. Try Local Resolution (building only)
         const localResult = resolveBuilding(searchQuery);
         if (localResult) {
-            applySearchResult(localResult);
-            if (!isNavigating) setIsSearching(false);
+            setSelectedBuilding(localResult);
+            flyToBuilding(localResult.location);
+            setIsSearching(false);
             return;
         }
 
 
-        // 3. Fallback to Google Places API
+        // 4. Fallback to Google Places API
         try {
             const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
             if (!googleApiKey) throw new Error('No Google API key');
@@ -752,13 +772,19 @@ export default function CampusMap(props: CampusMapProps) {
                     <div className="space-y-3 mt-4">
                         {selectedBuilding.id !== 'MAPBOX_RESULT' && (
                             <button
-                                onClick={() => router.push(`/building/${selectedBuilding.id}`)}
+                                onClick={() => {
+                                    const url = targetRoom
+                                        ? `/building/${selectedBuilding.id}?room=${targetRoom}`
+                                        : `/building/${selectedBuilding.id}`;
+                                    router.push(url);
+                                }}
                                 className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-colors"
                             >
                                 <MapIcon className="h-5 w-5" />
-                                Open Indoor Map
+                                Open Indoor Map{targetRoom ? ` (Room ${targetRoom})` : ''}
                             </button>
                         )}
+
 
                         {isNavigating ? (
                             <button

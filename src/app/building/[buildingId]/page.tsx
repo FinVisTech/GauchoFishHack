@@ -2,8 +2,15 @@ import { getBuildingById, getAvailableFloors, getFloorplan } from '@/lib/data';
 import BuildingClient from '@/components/BuildingClient';
 import { notFound } from 'next/navigation';
 
-export default async function Page({ params }: { params: Promise<{ buildingId: string }> }) {
+export default async function Page({ 
+    params,
+    searchParams 
+}: { 
+    params: Promise<{ buildingId: string }>;
+    searchParams: Promise<{ room?: string }>;
+}) {
     const { buildingId } = await params;
+    const { room } = await searchParams;
     const building = getBuildingById(buildingId);
 
     if (!building) {
@@ -16,5 +23,7 @@ export default async function Page({ params }: { params: Promise<{ buildingId: s
         data: getFloorplan(buildingId, f)
     }));
 
-    return <BuildingClient building={building} floors={floors} />;
+    const targetRoom = room ? parseInt(room) : undefined;
+
+    return <BuildingClient building={building} floors={floors} targetRoom={targetRoom} />;
 }

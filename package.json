@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "floorplans": "ts-node scripts/unpackFloorplans.ts"
+    "floorplans": "ts-node scripts/unpackFloorplans.ts",
+    "convert-gpkg": "python scripts/convertGpkgToJson.py"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
