@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Layers, Search } from 'lucide-react';
+import { ArrowLeft, Layers, Search, ChevronDown } from 'lucide-react';
 import IndoorViewer from '@/components/IndoorViewer';
 import { getGraph, type Building, type GraphNode } from '@/lib/data';
 
@@ -22,6 +22,9 @@ export default function BuildingClient({ building, floors, targetRoom }: Buildin
     const [roomQuery, setRoomQuery] = useState('');
     const [pathData, setPathData] = useState<Record<number, GraphNode[]>>({});
     const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+    const [availableRooms, setAvailableRooms] = useState<number[]>([]);
+    const [showRoomDropdown, setShowRoomDropdown] = useState(false);
+    const [selectedRoom, setSelectedRoom] = useState<number | null>(targetRoom || null);
 
     // Get user location on mount
     useEffect(() => {
@@ -37,11 +40,32 @@ export default function BuildingClient({ building, floors, targetRoom }: Buildin
         }
     }, []);
 
+    // Load available rooms from graph if not already targeting a room
+    useEffect(() => {
+        if (targetRoom) return; // Skip if we already have a target room
+        
+        const graph = getGraph(building.id);
+        if (!graph) return;
+
+        // Get all unique room numbers
+        const rooms = Array.from(
+            new Set(
+                graph.getAllNodes()
+                    .filter(node => node.room_num !== null)
+                    .map(node => node.room_num)
+            )
+        ).sort((a, b) => (a || 0) - (b || 0));
+
+        setAvailableRooms(rooms as number[]);
+        console.log(`📋 Available rooms in ${building.name}: ${rooms.length} rooms`);
+    }, [building.id, targetRoom]);
+
     // Calculate path when targetRoom and userLocation are available
     useEffect(() => {
-        if (!targetRoom) return;
+        const roomToUse = selectedRoom || targetRoom;
+        if (!roomToUse) return;
         
-        console.log('🔍 BuildingClient: Calculating path for room', targetRoom);
+        console.log('🔍 BuildingClient: Calculating path for room', roomToUse);
         
         const graph = getGraph(building.id);
         if (!graph) {
@@ -66,10 +90,10 @@ export default function BuildingClient({ building, floors, targetRoom }: Buildin
         }
 
         // Find path to target room
-        const result = graph.findPathToRoom(targetRoom, entrance);
+        const result = graph.findPathToRoom(roomToUse, entrance);
         
         if (!result) {
-            console.warn(`No path found to room ${targetRoom}`);
+            console.warn(`No path found to room ${roomToUse}`);
             return;
         }
 
@@ -98,7 +122,7 @@ export default function BuildingClient({ building, floors, targetRoom }: Buildin
         }
 
         console.log(`✅ Path calculated: ${result.path.length} nodes, from ${entrance.name}`);
-    }, [targetRoom, building.id, userLocation]);
+    }, [selectedRoom, targetRoom, building.id, userLocation]);
 
     const currentFloorData = floors.find(f => f.floor === currentFloor)?.data;
     const currentFloorPath = pathData[parseInt(currentFloor)] || [];
@@ -182,6 +206,51 @@ export default function BuildingClient({ building, floors, targetRoom }: Buildin
                     ) : (
                         <div className="h-full flex items-center justify-center text-slate-400">
                             Floor data unavailble
+                        </div>
+                    )}
+
+                    {/* Room picker dropdown (right side) */}
+                    {!targetRoom && availableRooms.length > 0 && (
+                        <div className="absolute top-4 right-4 z-20 w-64">
+                            <div className="bg-white dark:bg-slate-900 shadow-lg rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                                {/* Dropdown header */}
+                                <button
+                                    onClick={() => setShowRoomDropdown(!showRoomDropdown)}
+                                    className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <Search className="h-4 w-4 text-slate-400" />
+                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                            {selectedRoom ? `Room ${selectedRoom}` : 'Select a room'}
+                                        </span>
+                                    </div>
+                                    <ChevronDown 
+                                        className={`h-4 w-4 text-slate-400 transition-transform ${showRoomDropdown ? 'rotate-180' : ''}`}
+                                    />
+                                </button>
+
+                                {/* Dropdown content */}
+                                {showRoomDropdown && (
+                                    <div className="border-t border-slate-200 dark:border-slate-800 max-h-96 overflow-y-auto">
+                                        {availableRooms.map((room) => (
+                                            <button
+                                                key={room}
+                                                onClick={() => {
+                                                    setSelectedRoom(room);
+                                                    setShowRoomDropdown(false);
+                                                }}
+                                                className={`w-full px-4 py-2 text-sm text-left transition-colors ${
+                                                    selectedRoom === room
+                                                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-medium'
+                                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                                }`}
+                                            >
+                                                Room {room}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>
